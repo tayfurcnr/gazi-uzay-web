@@ -106,43 +106,43 @@ export default function Sidebar({ onLoginClick = () => {} }) {
               </Link>
             ))}
           </nav>
+        </div>
 
-          <div className="sidebar-footer">
-            {isLoggedIn && (
-              <Link href="/profile" className="sidebar-profile" onClick={() => setIsOpen(false)}>
-                <div className="sidebar-profile-avatar">
-                  <img src={profileAvatar || '/avatar-placeholder.svg'} alt="Profil" />
-                </div>
-                <div className="sidebar-profile-text">
-                  <span>{profileName}</span>
-                  <strong>{profileTitle}</strong>
-                </div>
-              </Link>
-            )}
-            {isLoggedIn ? (
-              <button type="button" className="btn-login" onClick={handleLogout}>
-                <span className="nav-icon">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
-                    <polyline points="10,17 15,12 10,7" />
-                    <line x1="15" y1="12" x2="3" y2="12" />
-                  </svg>
-                </span>
-                <span className="nav-label">ÇIKIŞ YAP</span>
-              </button>
-            ) : (
-              <button type="button" className="btn-login" onClick={onLoginClick}>
-                <span className="nav-icon">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
-                    <polyline points="10,17 15,12 10,7" />
-                    <line x1="15" y1="12" x2="3" y2="12" />
-                  </svg>
-                </span>
-                <span className="nav-label">GİRİŞ YAP</span>
-              </button>
-            )}
-          </div>
+        <div className="sidebar-footer">
+          {isLoggedIn && (
+            <Link href="/profile" className="sidebar-profile" onClick={() => setIsOpen(false)}>
+              <div className="sidebar-profile-avatar">
+                <img src={profileAvatar || '/avatar-placeholder.svg'} alt="Profil" />
+              </div>
+              <div className="sidebar-profile-text">
+                <span>{profileName}</span>
+                <strong>{profileTitle}</strong>
+              </div>
+            </Link>
+          )}
+          {isLoggedIn ? (
+            <button type="button" className="btn-login" onClick={handleLogout}>
+              <span className="nav-icon">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+                  <polyline points="10,17 15,12 10,7" />
+                  <line x1="15" y1="12" x2="3" y2="12" />
+                </svg>
+              </span>
+              <span className="nav-label">ÇIKIŞ YAP</span>
+            </button>
+          ) : (
+            <button type="button" className="btn-login" onClick={onLoginClick}>
+              <span className="nav-icon">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+                  <polyline points="10,17 15,12 10,7" />
+                  <line x1="15" y1="12" x2="3" y2="12" />
+                </svg>
+              </span>
+              <span className="nav-label">GİRİŞ YAP</span>
+            </button>
+          )}
         </div>
       </div>
       
