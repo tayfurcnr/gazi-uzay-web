@@ -37,10 +37,26 @@ body {
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  padding: 32px 24px;
   transition: all 0.3s ease;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.sidebar-scroll {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+  scrollbar-width: none;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .sidebar-collapsed {
