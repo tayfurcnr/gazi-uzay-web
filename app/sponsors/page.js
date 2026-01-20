@@ -83,8 +83,6 @@ const DEFAULT_DATA = {
   ],
 }
 
-const STORAGE_KEY = 'sponsorsData'
-
 function buildLoopItems(items, minCount = 10) {
   const loopItems = []
   while (loopItems.length < minCount) {
@@ -130,17 +128,27 @@ const normalizeRole = (value) => {
 
 export default function Sponsors() {
   const [data, setData] = useState(DEFAULT_DATA)
+  const [savedData, setSavedData] = useState(DEFAULT_DATA)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userRole, setUserRole] = useState('')
   const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
+    const fetchSponsors = async () => {
       try {
-        setData(normalizeSponsorsData(JSON.parse(stored)))
+        const response = await fetch('/api/sponsors')
+        if (!response.ok) {
+          setData(DEFAULT_DATA)
+          setSavedData(DEFAULT_DATA)
+          return
+        }
+        const payload = await response.json()
+        const merged = normalizeSponsorsData(payload)
+        setData(merged)
+        setSavedData(merged)
       } catch {
         setData(DEFAULT_DATA)
+        setSavedData(DEFAULT_DATA)
       }
     }
     const updateAuth = () => {
@@ -152,12 +160,13 @@ export default function Sponsors() {
       }
       setUserRole(normalized)
     }
+    fetchSponsors()
     updateAuth()
     window.addEventListener('demoAuthChanged', updateAuth)
     return () => window.removeEventListener('demoAuthChanged', updateAuth)
   }, [])
 
-  const canEditPage = isLoggedIn && userRole === 'management'
+  const canEditPage = isLoggedIn && (userRole === 'management' || userRole === 'founder')
 
   useEffect(() => {
     if (!canEditPage && isEditing) {
@@ -165,22 +174,24 @@ export default function Sponsors() {
     }
   }, [canEditPage, isEditing])
 
-  const handleSave = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-    setIsEditing(false)
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/sponsors', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) return
+      const payload = await response.json()
+      const merged = normalizeSponsorsData(payload)
+      setData(merged)
+      setSavedData(merged)
+      setIsEditing(false)
+    } catch {}
   }
 
   const handleCancel = () => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        setData(normalizeSponsorsData(JSON.parse(stored)))
-      } catch {
-        setData(DEFAULT_DATA)
-      }
-    } else {
-      setData(DEFAULT_DATA)
-    }
+    setData(savedData)
     setIsEditing(false)
   }
 

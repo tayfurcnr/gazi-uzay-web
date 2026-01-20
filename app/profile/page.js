@@ -1,6 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import LottieLoader from '../../components/LottieLoader'
+
+const LOADER_SRC = '/lottie/space%20boy%20developer.json'
 
 const roleLabels = {
   guest: 'Misafir',
@@ -9,6 +12,11 @@ const roleLabels = {
   lead: 'Ekip Lideri',
   member: 'Üye',
 }
+
+const TITLE_MIN = 2
+const TITLE_MAX = 40
+const TITLE_PATTERN = /^[\p{L}\p{N}\s.'-]+$/u
+const BANNED_TITLE_TERMS = ['amk', 'sik', 'orospu', 'yarrak', 'salak', 'aptal', 'mal']
 
 export default function Profile() {
   const [role, setRole] = useState('')
@@ -20,16 +28,17 @@ export default function Profile() {
   const [position, setPosition] = useState('')
   const [company, setCompany] = useState('')
   const [linkedinUrl, setLinkedinUrl] = useState('')
-  const [gender, setGender] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [memberStart, setMemberStart] = useState('')
   const [memberEnd, setMemberEnd] = useState('')
   const [saveStatus, setSaveStatus] = useState('')
   const [approvalStatus, setApprovalStatus] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
   const [errors, setErrors] = useState({
     firstName: '',
     lastName: '',
+    title: '',
     phone: '',
     email: '',
     memberStart: '',
@@ -52,7 +61,6 @@ export default function Profile() {
       setPosition(localStorage.getItem('demoProfilePosition') || '')
       setCompany(localStorage.getItem('demoProfileCompany') || '')
       setLinkedinUrl(localStorage.getItem('demoProfileLinkedin') || '')
-      setGender(localStorage.getItem('demoProfileGender') || '')
       setPhone(localStorage.getItem('demoProfilePhone') || '')
       setEmail(localStorage.getItem('demoProfileEmail') || '')
       setMemberStart(localStorage.getItem('demoProfileMemberStart') || '')
@@ -62,6 +70,7 @@ export default function Profile() {
 
     const updateProfile = async () => {
       try {
+        setIsLoading(true)
         const response = await fetch('/api/members/me')
         if (!response.ok) {
           if (isActive) applyLocalProfile()
@@ -78,7 +87,6 @@ export default function Profile() {
         setPosition(data.position || '')
         setCompany(data.company || '')
         setLinkedinUrl(data.linkedinUrl || '')
-        setGender(data.gender || '')
         setPhone(data.phone || '')
         setEmail(data.email || '')
         setMemberStart(data.memberStart || '')
@@ -86,6 +94,8 @@ export default function Profile() {
         setApprovalStatus(data.status || 'pending')
       } catch {
         if (isActive) applyLocalProfile()
+      } finally {
+        if (isActive) setIsLoading(false)
       }
     }
 
@@ -111,27 +121,40 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     const trimmedName = firstName.trim()
     const trimmedSurname = lastName.trim()
+    const trimmedTitle = title.trim()
     const trimmedPhone = phone.trim()
     const trimmedEmail = email.trim()
     const trimmedStart = memberStart.trim()
     const trimmedEnd = memberEnd.trim()
     const emailPattern = /^\S+@\S+\.\S+$/
+    const normalizedTitle = trimmedTitle.toLowerCase()
+    const titleError = trimmedTitle
+      ? trimmedTitle.length < TITLE_MIN || trimmedTitle.length > TITLE_MAX
+        ? `Ünvan ${TITLE_MIN}-${TITLE_MAX} karakter olmalıdır.`
+        : !TITLE_PATTERN.test(trimmedTitle)
+        ? 'Ünvan yalnızca harf, sayı ve basit noktalama içerebilir.'
+        : BANNED_TITLE_TERMS.some((term) => normalizedTitle.includes(term))
+        ? 'Ünvan uygunsuz içerik içeremez.'
+        : ''
+      : ''
     const nextErrors = {
       firstName: trimmedName ? '' : 'İsim zorunludur.',
       lastName: trimmedSurname ? '' : 'Soyisim zorunludur.',
+      title: titleError,
       phone: trimmedPhone ? '' : 'Telefon zorunludur.',
       email: !trimmedEmail
         ? 'E-posta zorunludur.'
         : emailPattern.test(trimmedEmail)
         ? ''
         : 'Geçerli e-posta girin.',
-      memberStart: trimmedStart ? '' : 'Başlangıç zorunludur.',
-      memberEnd: trimmedEnd ? '' : 'Sonlanma zorunludur.',
+      memberStart: trimmedStart ? '' : 'Üyelik başlangıcı zorunludur.',
+      memberEnd: trimmedEnd ? '' : 'Üyelik bitişi zorunludur.',
     }
     setErrors(nextErrors)
     if (
       nextErrors.firstName ||
       nextErrors.lastName ||
+      nextErrors.title ||
       nextErrors.phone ||
       nextErrors.email ||
       nextErrors.memberStart ||
@@ -143,11 +166,10 @@ export default function Profile() {
     const payload = {
       firstName: trimmedName,
       lastName: trimmedSurname,
-      title: title.trim(),
+      title: trimmedTitle,
       position: position.trim(),
       company: company.trim(),
       linkedinUrl: linkedinUrl.trim(),
-      gender,
       phone: trimmedPhone,
       email: trimmedEmail,
       memberStart,
@@ -162,7 +184,17 @@ export default function Profile() {
         body: JSON.stringify(payload),
       })
       if (!response.ok) {
-        setSaveStatus('Profil kaydedilemedi.')
+        let errorMessage = 'Profil kaydedilemedi.'
+        try {
+          const errorBody = await response.json()
+          if (errorBody?.message) {
+            errorMessage = errorBody.message
+          }
+          if (errorBody?.error === 'title_invalid') {
+            setErrors((prev) => ({ ...prev, title: errorBody.message || 'Ünvan geçersiz.' }))
+          }
+        } catch {}
+        setSaveStatus(errorMessage)
         return
       }
       const data = await response.json()
@@ -171,11 +203,14 @@ export default function Profile() {
 
       localStorage.setItem('demoProfileName', data.firstName || trimmedName)
       localStorage.setItem('demoProfileSurname', data.lastName || trimmedSurname)
-      localStorage.setItem('demoProfileTitle', data.title || title.trim())
+      if (data.status === 'approved') {
+        localStorage.setItem('demoProfileTitle', data.title || trimmedTitle)
+      } else {
+        localStorage.removeItem('demoProfileTitle')
+      }
       localStorage.setItem('demoProfilePosition', data.position || position.trim())
       localStorage.setItem('demoProfileCompany', data.company || company.trim())
       localStorage.setItem('demoProfileLinkedin', data.linkedinUrl || linkedinUrl.trim())
-      localStorage.setItem('demoProfileGender', data.gender || gender)
       localStorage.setItem('demoProfilePhone', data.phone || trimmedPhone)
       localStorage.setItem('demoProfileEmail', data.email || trimmedEmail)
       localStorage.setItem('demoProfileMemberStart', data.memberStart || memberStart)
@@ -193,6 +228,8 @@ export default function Profile() {
     }
   }
 
+  const displayTitle = approvalStatus === 'approved' ? title : ''
+
   return (
     <div className="page profile-page">
       <div className="profile-card">
@@ -209,7 +246,7 @@ export default function Profile() {
             <p>
               {firstName || lastName ? `${firstName} ${lastName}`.trim() : 'İsim Soyisim'}
             </p>
-            <span className="profile-subtitle">{title || 'Ünvan'}</span>
+            <span className="profile-subtitle">{displayTitle || 'Ünvan'}</span>
             <span className="profile-hint">Profil fotoğrafı yüklemek için görsele tıklayın.</span>
           </div>
         </div>
@@ -224,130 +261,84 @@ export default function Profile() {
                 : 'Onay bekliyor'}
             </strong>
           </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>İsim</span>
-            <div className="profile-input-wrap">
-              {errors.firstName && <em className="profile-error">{errors.firstName}</em>}
-              <input
-                className="contact-edit-input profile-input"
-                value={firstName}
-                onChange={(event) => {
-                  setFirstName(event.target.value)
-                  setErrors((prev) => ({ ...prev, firstName: '' }))
-                }}
-                placeholder="İsim"
-              />
-            </div>
+        {isLoading && (
+          <div className="admin-loading admin-loading-overlay">
+            <LottieLoader src={LOADER_SRC} label="Profil yükleniyor..." size={160} />
           </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>Soyisim</span>
-            <div className="profile-input-wrap">
-              {errors.lastName && <em className="profile-error">{errors.lastName}</em>}
-              <input
-                className="contact-edit-input profile-input"
-                value={lastName}
-                onChange={(event) => {
-                  setLastName(event.target.value)
-                  setErrors((prev) => ({ ...prev, lastName: '' }))
-                }}
-                placeholder="Soyisim"
-              />
+        )}
+          <p className="profile-section-label">Kişisel Bilgiler</p>
+          <div className="profile-row profile-row-input profile-field profile-row-two">
+            <div className="profile-row-inline">
+              <span>İsim</span>
+              <div className="profile-input-wrap">
+                {errors.firstName && <em className="profile-error">{errors.firstName}</em>}
+                <input
+                  className="contact-edit-input profile-input"
+                  value={firstName}
+                  onChange={(event) => {
+                    setFirstName(event.target.value)
+                    setErrors((prev) => ({ ...prev, firstName: '' }))
+                  }}
+                  placeholder="İsim"
+                />
+              </div>
             </div>
-          </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>E-posta</span>
-            <div className="profile-input-wrap">
-              {errors.email && <em className="profile-error">{errors.email}</em>}
-              <input
-                className="contact-edit-input profile-input"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value)
-                  setErrors((prev) => ({ ...prev, email: '' }))
-                }}
-                placeholder="ornek@mail.com"
-                inputMode="email"
-                readOnly
-              />
-            </div>
-          </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>Telefon</span>
-            <div className="profile-input-wrap">
-              {errors.phone && <em className="profile-error">{errors.phone}</em>}
-              <input
-                className="contact-edit-input profile-input"
-                value={phone}
-                onChange={(event) => {
-                  setPhone(event.target.value)
-                  setErrors((prev) => ({ ...prev, phone: '' }))
-                }}
-                placeholder="05xx xxx xx xx"
-                inputMode="tel"
-              />
-            </div>
-          </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>Topluluk Ünvanı</span>
-            <div className="profile-input-wrap">
-              <input
-                className="contact-edit-input profile-input"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                placeholder="Topluluk Ünvanı"
-              />
-            </div>
-          </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>Güncel Pozisyon</span>
-            <div className="profile-input-wrap">
-              <input
-                className="contact-edit-input profile-input"
-                value={position}
-                onChange={(event) => setPosition(event.target.value)}
-                placeholder="Örn: Ar-Ge Mühendisi"
-              />
-            </div>
-          </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>Firma</span>
-            <div className="profile-input-wrap">
-              <input
-                className="contact-edit-input profile-input"
-                value={company}
-                onChange={(event) => setCompany(event.target.value)}
-                placeholder="Örn: Gazi Uzay"
-              />
-            </div>
-          </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>LinkedIn</span>
-            <div className="profile-input-wrap">
-              <input
-                className="contact-edit-input profile-input"
-                value={linkedinUrl}
-                onChange={(event) => setLinkedinUrl(event.target.value)}
-                placeholder="linkedin.com/in/kullanici"
-              />
-            </div>
-          </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>Cinsiyet</span>
-            <div className="profile-input-wrap">
-              <select
-                className="contact-edit-input contact-edit-select profile-input"
-                value={gender}
-                onChange={(event) => setGender(event.target.value)}
-              >
-                <option value="">Seçiniz</option>
-                <option value="female">Kadın</option>
-                <option value="male">Erkek</option>
-              </select>
+            <div className="profile-row-inline">
+              <span>Soyisim</span>
+              <div className="profile-input-wrap">
+                {errors.lastName && <em className="profile-error">{errors.lastName}</em>}
+                <input
+                  className="contact-edit-input profile-input"
+                  value={lastName}
+                  onChange={(event) => {
+                    setLastName(event.target.value)
+                    setErrors((prev) => ({ ...prev, lastName: '' }))
+                  }}
+                  placeholder="Soyisim"
+                />
+              </div>
             </div>
           </div>
           <div className="profile-row profile-row-input profile-field profile-row-two">
             <div className="profile-row-inline">
-              <span>Başlangıç</span>
+              <span>E-posta</span>
+              <div className="profile-input-wrap">
+                {errors.email && <em className="profile-error">{errors.email}</em>}
+                <input
+                  className="contact-edit-input profile-input"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value)
+                    setErrors((prev) => ({ ...prev, email: '' }))
+                  }}
+                  placeholder="ornek@mail.com"
+                  inputMode="email"
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="profile-row-inline">
+              <span>Telefon</span>
+              <div className="profile-input-wrap">
+                {errors.phone && <em className="profile-error">{errors.phone}</em>}
+                <input
+                  className="contact-edit-input profile-input"
+                  value={phone}
+                  onChange={(event) => {
+                    setPhone(event.target.value)
+                    setErrors((prev) => ({ ...prev, phone: '' }))
+                  }}
+                  placeholder="05xx xxx xx xx"
+                  inputMode="tel"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="profile-section-separator" />
+          <p className="profile-section-label">Üyelik ve Topluluk</p>
+          <div className="profile-row profile-row-input profile-field profile-row-two">
+            <div className="profile-row-inline">
+              <span>Üyelik Başlangıcı</span>
               <div className="profile-input-wrap">
                 {errors.memberStart && (
                   <em className="profile-error">{errors.memberStart}</em>
@@ -373,7 +364,7 @@ export default function Profile() {
               </div>
             </div>
             <div className="profile-row-inline">
-              <span>Sonlanma</span>
+              <span>Üyelik Bitişi</span>
               <div className="profile-input-wrap">
                 {errors.memberEnd && <em className="profile-error">{errors.memberEnd}</em>}
                 <select
@@ -396,6 +387,56 @@ export default function Profile() {
                   })}
                 </select>
               </div>
+            </div>
+          </div>
+          <div className="profile-row profile-row-input profile-field">
+            <span>Topluluk Ünvanı</span>
+            <div className="profile-input-wrap">
+              {errors.title && <em className="profile-error">{errors.title}</em>}
+              <input
+                className="contact-edit-input profile-input"
+                value={title}
+                onChange={(event) => {
+                  setTitle(event.target.value)
+                  setErrors((prev) => ({ ...prev, title: '' }))
+                }}
+                placeholder="Topluluk Ünvanı"
+              />
+            </div>
+          </div>
+          <div className="profile-section-separator" />
+          <p className="profile-section-label">Profesyonel Bilgiler</p>
+          <div className="profile-row profile-row-input profile-field">
+            <span>Firma</span>
+            <div className="profile-input-wrap">
+              <input
+                className="contact-edit-input profile-input"
+                value={company}
+                onChange={(event) => setCompany(event.target.value)}
+                placeholder="Örn: Gazi Uzay"
+              />
+            </div>
+          </div>
+          <div className="profile-row profile-row-input profile-field">
+            <span>Güncel Pozisyon</span>
+            <div className="profile-input-wrap">
+              <input
+                className="contact-edit-input profile-input"
+                value={position}
+                onChange={(event) => setPosition(event.target.value)}
+                placeholder="Örn: Ar-Ge Mühendisi"
+              />
+            </div>
+          </div>
+          <div className="profile-row profile-row-input profile-field">
+            <span>LinkedIn</span>
+            <div className="profile-input-wrap">
+              <input
+                className="contact-edit-input profile-input"
+                value={linkedinUrl}
+                onChange={(event) => setLinkedinUrl(event.target.value)}
+                placeholder="linkedin.com/in/kullanici"
+              />
             </div>
           </div>
           {saveStatus && <p className="profile-status">{saveStatus}</p>}

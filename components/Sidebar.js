@@ -63,7 +63,7 @@ export default function Sidebar({ onLoginClick = () => {} }) {
     { href: '/contact', label: 'İLETİŞİM' },
   ]
   const adminItems =
-    userRole === 'management' || userRole === 'founder'
+    userRole === 'management' || userRole === 'founder' || userRole === 'lead'
       ? [{ href: '/admin', label: 'YÖNETİM PANELİ' }]
       : []
 

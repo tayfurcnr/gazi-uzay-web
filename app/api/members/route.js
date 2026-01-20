@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/route'
 import { prisma } from '../../../lib/prisma'
 
-const isAdmin = (role) => role === 'MANAGEMENT' || role === 'FOUNDER'
+const isAdmin = (role) => role === 'MANAGEMENT' || role === 'FOUNDER' || role === 'LEAD'
 
 const splitName = (fullName = '') => {
   const parts = fullName.trim().split(/\s+/).filter(Boolean)
@@ -28,7 +28,6 @@ const toMemberDto = (user) => {
     position: profile?.position || '',
     company: profile?.company || '',
     linkedinUrl: profile?.linkedinUrl || '',
-    gender: profile?.gender || '',
     memberStart: startYear,
     memberEnd: endYear || (profile?.isActive ? 'active' : ''),
     status: user.status ? user.status.toLowerCase() : 'pending',

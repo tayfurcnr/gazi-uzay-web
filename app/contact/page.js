@@ -34,8 +34,6 @@ const DEFAULT_DATA = {
     'https://www.google.com/maps?q=Makine%20M%C3%BChendisli%C4%9Fi%20%C4%B0dari%20Binas%C4%B1%20Alt%20Kat%2C%20Yama%C3%A7tepe%2C%2027410%20%C5%9Eahinbey%2FGaziantep&output=embed',
 }
 
-const STORAGE_KEY = 'contactData'
-
 function mergeData(base, stored) {
   if (!stored) return base
   return {
@@ -58,17 +56,27 @@ const normalizeRole = (value) => {
 
 export default function Contact() {
   const [data, setData] = useState(DEFAULT_DATA)
+  const [savedData, setSavedData] = useState(DEFAULT_DATA)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userRole, setUserRole] = useState('')
   const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
+    const fetchContact = async () => {
       try {
-        setData(mergeData(DEFAULT_DATA, JSON.parse(stored)))
+        const response = await fetch('/api/contact')
+        if (!response.ok) {
+          setData(DEFAULT_DATA)
+          setSavedData(DEFAULT_DATA)
+          return
+        }
+        const payload = await response.json()
+        const merged = mergeData(DEFAULT_DATA, payload)
+        setData(merged)
+        setSavedData(merged)
       } catch {
         setData(DEFAULT_DATA)
+        setSavedData(DEFAULT_DATA)
       }
     }
     const updateAuth = () => {
@@ -80,12 +88,13 @@ export default function Contact() {
       }
       setUserRole(normalized)
     }
+    fetchContact()
     updateAuth()
     window.addEventListener('demoAuthChanged', updateAuth)
     return () => window.removeEventListener('demoAuthChanged', updateAuth)
   }, [])
 
-  const canEditPage = isLoggedIn && userRole === 'management'
+  const canEditPage = isLoggedIn && (userRole === 'management' || userRole === 'founder')
 
   useEffect(() => {
     if (!canEditPage && isEditing) {
@@ -93,22 +102,24 @@ export default function Contact() {
     }
   }, [canEditPage, isEditing])
 
-  const handleSave = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-    setIsEditing(false)
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) return
+      const payload = await response.json()
+      const merged = mergeData(DEFAULT_DATA, payload)
+      setData(merged)
+      setSavedData(merged)
+      setIsEditing(false)
+    } catch {}
   }
 
   const handleCancel = () => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        setData(mergeData(DEFAULT_DATA, JSON.parse(stored)))
-      } catch {
-        setData(DEFAULT_DATA)
-      }
-    } else {
-      setData(DEFAULT_DATA)
-    }
+    setData(savedData)
     setIsEditing(false)
   }
 

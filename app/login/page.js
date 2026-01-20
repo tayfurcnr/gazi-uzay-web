@@ -10,13 +10,7 @@ export default function Login() {
   const handleGoogleLogin = () => {
     if (isSubmitting) return
     setIsSubmitting(true)
-    const { origin } = window.location
-    const referrer = document.referrer
-    const callbackUrl =
-      referrer && referrer.startsWith(origin) && !referrer.includes('/login')
-        ? referrer
-        : '/'
-    signIn('google', { callbackUrl })
+    signIn('google', { callbackUrl: '/' })
   }
 
   return (

@@ -43,11 +43,14 @@ export default function AuthSync() {
           localStorage.setItem('demoProfileSurname', data.lastName || '')
           localStorage.setItem('demoProfileEmail', data.email || '')
           localStorage.setItem('demoProfilePhone', data.phone || '')
-          localStorage.setItem('demoProfileTitle', data.title || '')
+          if (data.status === 'approved') {
+            localStorage.setItem('demoProfileTitle', data.title || '')
+          } else {
+            localStorage.removeItem('demoProfileTitle')
+          }
           localStorage.setItem('demoProfilePosition', data.position || '')
           localStorage.setItem('demoProfileCompany', data.company || '')
           localStorage.setItem('demoProfileLinkedin', data.linkedinUrl || '')
-          localStorage.setItem('demoProfileGender', data.gender || '')
           localStorage.setItem('demoProfileMemberStart', data.memberStart || '')
           localStorage.setItem('demoProfileMemberEnd', data.memberEnd || '')
           localStorage.setItem('demoProfileStatus', data.status || 'pending')

@@ -1,234 +1,232 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import LottieLoader from '../../components/LottieLoader'
 
-const roleOptions = [
-  { value: 'founder', label: 'Kurucu', disabled: true },
-  { value: 'guest', label: 'Misafir' },
-  { value: 'member', label: 'Üye' },
-  { value: 'lead', label: 'Ekip Lideri' },
-  { value: 'management', label: 'Yönetim' },
-]
+const LOADER_SRC = '/lottie/space%20boy%20developer.json'
 
 export default function Admin() {
-  const [isAllowed, setIsAllowed] = useState(false)
-  const [members, setMembers] = useState([])
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [query, setQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('approvals')
-  const router = useRouter()
+  const [totalMembers, setTotalMembers] = useState(0)
+  const [pendingMembers, setPendingMembers] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isMembersOpen, setIsMembersOpen] = useState(true)
+  const [isTeamsOpen, setIsTeamsOpen] = useState(true)
+  const [portalQuery, setPortalQuery] = useState('')
+  const [userRole, setUserRole] = useState('')
 
   useEffect(() => {
-    const role = localStorage.getItem('demoRole') || ''
-    if (role !== 'management' && role !== 'founder') {
-      router.replace('/profile')
-      return
-    }
-    setIsAllowed(true)
-    const fetchMembers = async () => {
+    const fetchCounts = async () => {
       try {
+        setIsLoading(true)
         const response = await fetch('/api/members')
         if (!response.ok) return
         const data = await response.json()
-        setMembers(Array.isArray(data) ? data : [])
+        if (!Array.isArray(data)) return
+        setTotalMembers(data.length)
+        setPendingMembers(data.filter((member) => member.status === 'pending').length)
       } catch {}
-    }
-    fetchMembers()
-  }, [router])
-
-  const updateMember = async (id, updates) => {
-    if (updates.role === 'founder') {
-      return
-    }
-    try {
-      const response = await fetch(`/api/members/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      })
-      if (!response.ok) return
-      const updated = await response.json()
-      setMembers((prev) =>
-        prev.map((member) => (member.id === id ? updated : member))
-      )
-      const currentUserId = localStorage.getItem('demoUserId') || ''
-      if (currentUserId && currentUserId === id) {
-        if (updated.role) {
-          localStorage.setItem('demoRole', updated.role)
-        }
-        if (updated.status) {
-          localStorage.setItem('demoProfileStatus', updated.status)
-        }
-        window.dispatchEvent(new Event('demoAuthChanged'))
+      finally {
+        setIsLoading(false)
       }
-    } catch {}
-  }
-
-  if (!isAllowed) {
-    return null
-  }
-
-  const filteredMembers = members.filter((member) => {
-    if (activeTab === 'approvals' && (member.status || 'pending') !== 'pending') {
-      return false
     }
-    if (statusFilter !== 'all' && (member.status || 'pending') !== statusFilter) {
-      return false
+    fetchCounts()
+  }, [])
+
+  useEffect(() => {
+    const updateAuth = () => {
+      setUserRole(localStorage.getItem('demoRole') || '')
     }
-    if (!query.trim()) return true
-    const haystack = `${member.firstName || ''} ${member.lastName || ''} ${
-      member.email || ''
-    }`.toLowerCase()
-    return haystack.includes(query.trim().toLowerCase())
+    updateAuth()
+    window.addEventListener('demoAuthChanged', updateAuth)
+    return () => window.removeEventListener('demoAuthChanged', updateAuth)
+  }, [])
+
+  const portalItems = [
+    {
+      key: 'members',
+      href: '/admin/members',
+      label: 'Tüm Üyeler',
+      eyebrow: 'Üye Yönetimi',
+      description: 'Üye listesini yönet ve detayları düzenle.',
+      count: totalMembers,
+      icon: (
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3z" />
+          <path d="M4 9v6c0 1.7 3.6 3 8 3s8-1.3 8-3V9" />
+          <path d="M4 15v4c0 1.7 3.6 3 8 3s8-1.3 8-3v-4" />
+        </svg>
+      ),
+    },
+    {
+      key: 'approvals',
+      href: '/admin/approvals',
+      label: 'Bekleyen Onaylar',
+      eyebrow: 'Onay Akışı',
+      description: 'Onay bekleyen üyeleri görüntüle ve karar ver.',
+      count: pendingMembers,
+      soft: pendingMembers === 0,
+      icon: (
+        <svg viewBox="0 0 24 24">
+          <path d="M9.5 16.5 5 12l1.4-1.4 3.1 3.1L17.6 5.6 19 7z" />
+          <path d="M4 4h12a2 2 0 0 1 2 2v6h-2V6H4v12h12v-4h2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+        </svg>
+      ),
+    },
+  ]
+
+  const teamItems = [
+    {
+      key: 'team-management',
+      label: 'Takım Yönetimi',
+      eyebrow: 'Takım İşlemleri',
+      description: 'Takım yapısı ve liderlik düzenlemeleri yakında.',
+      icon: (
+        <svg viewBox="0 0 24 24">
+          <path d="M7.5 11a3.5 3.5 0 1 1 3.5-3.5A3.5 3.5 0 0 1 7.5 11zm9 0a3.5 3.5 0 1 1 3.5-3.5A3.5 3.5 0 0 1 16.5 11zM3 20a4.5 4.5 0 0 1 9 0v1H3zm9.5 1v-1a4.5 4.5 0 0 1 9 0v1z" />
+        </svg>
+      ),
+    },
+    {
+      key: 'my-team',
+      label: 'Takımım',
+      eyebrow: 'Takım İşlemleri',
+      description: 'Takım üyeleri ve görev görünümü yakında.',
+      icon: (
+        <svg viewBox="0 0 24 24">
+          <path d="M12 12a3.5 3.5 0 1 1 3.5-3.5A3.5 3.5 0 0 1 12 12zm-6 8a6 6 0 0 1 12 0v1H6z" />
+        </svg>
+      ),
+    },
+  ]
+
+  const filteredItems = portalItems.filter((item) => {
+    const haystack = `${item.label} ${item.eyebrow} ${item.description}`.toLowerCase()
+    return haystack.includes(portalQuery.trim().toLowerCase())
   })
 
-  const removeMember = async (id) => {
-    try {
-      const response = await fetch(`/api/members/${id}`, { method: 'DELETE' })
-      if (!response.ok) return
-      setMembers((prev) => prev.filter((member) => member.id !== id))
-    } catch {}
-  }
+  const filteredTeamItems = teamItems.filter((item) => {
+    const haystack = `${item.label} ${item.eyebrow} ${item.description}`.toLowerCase()
+    return haystack.includes(portalQuery.trim().toLowerCase())
+  })
 
   return (
     <div className="page">
-      <div className="admin-card">
-        <h1>Üyelik Onayı</h1>
-        <p className="admin-subtitle">Tüm Üyeler</p>
-        <div className="admin-tabs">
-          <button
-            type="button"
-            className={`admin-tab ${activeTab === 'approvals' ? 'active' : ''}`}
-            onClick={() => setActiveTab('approvals')}
-          >
-            Üyelik Onayı
-          </button>
-          <button
-            type="button"
-            className={`admin-tab ${activeTab === 'members' ? 'active' : ''}`}
-            onClick={() => setActiveTab('members')}
-          >
-            Tüm Üyeler
-          </button>
-        </div>
-        <div className="admin-filters">
-          {[
-            { id: 'all', label: 'Tümü' },
-            { id: 'pending', label: 'Bekleyen' },
-            { id: 'approved', label: 'Onaylı' },
-            { id: 'rejected', label: 'Reddedildi' },
-          ].map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`admin-filter ${statusFilter === item.id ? 'active' : ''}`}
-              onClick={() => setStatusFilter(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-          <input
-            className="admin-search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="İsim veya e-posta ara"
-          />
-        </div>
-        {members.length === 0 ? (
-          <p>Henüz üye kaydı bulunmuyor.</p>
-        ) : filteredMembers.length === 0 ? (
-          <p>Filtreye uygun üye bulunamadı.</p>
-        ) : (
-          <div className="admin-member-list">
-            {filteredMembers.map((member) => (
-              <div className="admin-member-card" key={member.id}>
-                <div className="admin-member-header">
-                  <div className="admin-member-profile">
-                    <div className="admin-member-avatar">
-                      <img src={member.avatar || '/avatar-placeholder.svg'} alt="Profil" />
-                    </div>
-                  </div>
-                  <div className="admin-member-info">
-                    <h2>
-                      {member.firstName} {member.lastName}
-                    </h2>
-                    <p>{member.email || 'E-posta yok'}</p>
-                    <div className="admin-member-lines">
-                      <div className="admin-member-line">
-                        <span>Telefon</span>
-                        <strong>{member.phone || '-'}</strong>
-                      </div>
-                      <div className="admin-member-line">
-                        <span>Topluluk Ünvanı</span>
-                        <strong>{member.title || '-'}</strong>
-                      </div>
-                      <div className="admin-member-line">
-                        <span>Başlangıç</span>
-                        <strong>{member.memberStart || '-'}</strong>
-                      </div>
-                      <div className="admin-member-line">
-                        <span>Sonlanma</span>
-                        <strong>{member.memberEnd || '-'}</strong>
-                      </div>
-                    </div>
-                  </div>
-                  <span className={`profile-status-badge ${member.status || 'pending'}`}>
-                    {member.status === 'approved'
-                      ? 'Onaylandı'
-                      : member.status === 'rejected'
-                      ? 'Reddedildi'
-                      : 'Onay bekliyor'}
-                  </span>
-                </div>
-                <div className="admin-member-actions">
-                  <select
-                    className="contact-edit-input contact-edit-select admin-role-select"
-                    value={member.role || 'member'}
-                    onChange={(event) => updateMember(member.id, { role: event.target.value })}
-                    disabled={member.role === 'founder'}
-                  >
-                    {roleOptions.map((option) => (
-                      <option
-                        key={option.value}
-                        value={option.value}
-                        disabled={option.disabled}
-                      >
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {activeTab === 'approvals' ? (
-                    <>
-                      <button
-                        type="button"
-                        className="admin-approve"
-                        onClick={() => updateMember(member.id, { status: 'approved' })}
-                      >
-                        Onayla
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-reject"
-                        onClick={() => updateMember(member.id, { status: 'rejected' })}
-                      >
-                        Reddet
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      className="admin-remove"
-                      onClick={() => removeMember(member.id)}
-                    >
-                      Üyeyi Kaldır
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+      <div className="admin-card admin-portal-card-wrap">
+        <div className="admin-portal-header">
+          <div>
+            <h1>Yönetim Paneli</h1>
+            <p className="admin-subtitle">Yönetim Araçları</p>
           </div>
-        )}
+          <div className="admin-portal-actions">
+            <input
+              className="admin-portal-search"
+              value={portalQuery}
+              onChange={(event) => setPortalQuery(event.target.value)}
+              placeholder="Ara"
+            />
+            <div className="admin-portal-pill">Portal</div>
+          </div>
+        </div>
+        <div className="admin-portal-section">
+          <button
+            type="button"
+            className="admin-portal-section-toggle"
+            onClick={() => setIsMembersOpen((prev) => !prev)}
+          >
+            <span>Üye İşlemler</span>
+            <span className={`admin-portal-chevron ${isMembersOpen ? 'open' : ''}`}>
+              ▾
+            </span>
+          </button>
+          {isMembersOpen && (
+            <div className="admin-portal-grid">
+              {isLoading ? (
+                <div className="admin-loading admin-portal-loading admin-loading-overlay">
+                  <LottieLoader src={LOADER_SRC} label="Modüller hazırlanıyor..." size={150} />
+                </div>
+              ) : (
+                filteredItems.map((item) => {
+                  const isApprovalsLocked =
+                    item.key === 'approvals' && userRole === 'lead'
+                  if (isApprovalsLocked) {
+                    return (
+                      <div
+                        key={item.key}
+                        className={`admin-portal-card admin-portal-card-soft`}
+                        aria-disabled="true"
+                      >
+                        <div className="admin-portal-card-top">
+                          <div className="admin-portal-icon" aria-hidden="true">
+                            {item.icon}
+                          </div>
+                          <span className="admin-portal-eyebrow">{item.eyebrow}</span>
+                        </div>
+                        <div className="admin-portal-count">{item.count}</div>
+                        <h2>{item.label}</h2>
+                        <p>Yalnızca yönetim ve kurucu erişebilir.</p>
+                        <div className="admin-portal-cta">Kilitli</div>
+                      </div>
+                    )
+                  }
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      className={`admin-portal-card ${
+                        item.soft ? 'admin-portal-card-soft' : ''
+                      }`}
+                    >
+                      <div className="admin-portal-card-top">
+                        <div className="admin-portal-icon" aria-hidden="true">
+                          {item.icon}
+                        </div>
+                        <span className="admin-portal-eyebrow">{item.eyebrow}</span>
+                      </div>
+                      <div className="admin-portal-count">{item.count}</div>
+                      <h2>{item.label}</h2>
+                      <p>{item.description}</p>
+                      <div className="admin-portal-cta">Ekrana git →</div>
+                    </Link>
+                  )
+                })
+              )}
+            </div>
+          )}
+        </div>
+        <div className="admin-portal-section">
+          <button
+            type="button"
+            className="admin-portal-section-toggle"
+            onClick={() => setIsTeamsOpen((prev) => !prev)}
+          >
+            <span>Takım İşlemleri</span>
+            <span className={`admin-portal-chevron ${isTeamsOpen ? 'open' : ''}`}>
+              ▾
+            </span>
+          </button>
+          {isTeamsOpen && (
+            <div className="admin-portal-grid">
+              {filteredTeamItems.map((item) => (
+                <div
+                  key={item.key}
+                  className="admin-portal-card admin-portal-card-soft"
+                  aria-disabled="true"
+                >
+                  <div className="admin-portal-card-top">
+                    <div className="admin-portal-icon" aria-hidden="true">
+                      {item.icon}
+                    </div>
+                    <span className="admin-portal-eyebrow">{item.eyebrow}</span>
+                  </div>
+                  <h2>{item.label}</h2>
+                  <p>{item.description}</p>
+                  <div className="admin-portal-cta">Yakında</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

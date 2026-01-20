@@ -18,8 +18,23 @@ export default function AppShell({ children }) {
       const loggedIn = localStorage.getItem('demoAuth') === 'true'
       const name = localStorage.getItem('demoProfileName') || ''
       const surname = localStorage.getItem('demoProfileSurname') || ''
+      const phone = localStorage.getItem('demoProfilePhone') || ''
+      const email = localStorage.getItem('demoProfileEmail') || ''
+      const memberStart = localStorage.getItem('demoProfileMemberStart') || ''
+      const memberEnd = localStorage.getItem('demoProfileMemberEnd') || ''
+      const emailPattern = /^\S+@\S+\.\S+$/
       setIsLoggedIn(loggedIn)
-      setIsProfileComplete(Boolean(name.trim() && surname.trim()))
+      setIsProfileComplete(
+        Boolean(
+          name.trim() &&
+            surname.trim() &&
+            phone.trim() &&
+            email.trim() &&
+            emailPattern.test(email.trim()) &&
+            memberStart.trim() &&
+            memberEnd.trim()
+        )
+      )
     }
     updateProfile()
     window.addEventListener('demoAuthChanged', updateProfile)
@@ -41,8 +56,7 @@ export default function AppShell({ children }) {
       <main className="main-content">
         {isBlocked ? (
           <div className="profile-block">
-            <h2>Profilinizi tamamlayın</h2>
-            <p>İsim ve soyisim girmeden diğer sayfalara erişemezsiniz.</p>
+            <h3>Lütfen profil bilgilerinizin eksiksiz ve güncel olduğundan emin olunuz.</h3>
           </div>
         ) : (
           children
