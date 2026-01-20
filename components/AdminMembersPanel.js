@@ -160,6 +160,9 @@ export default function AdminMembersPanel({ mode }) {
     if (mode === 'approvals' && memberStatus !== 'pending') {
       return false
     }
+    if (mode === 'members' && memberStatus === 'pending') {
+      return false
+    }
     if (mode === 'members' && activeOnly && member.memberEnd !== 'active') {
       return false
     }
@@ -337,7 +340,11 @@ export default function AdminMembersPanel({ mode }) {
                               })}
                             </select>
                           ) : (
-                            <strong>{member.memberEnd || '-'}</strong>
+                            <strong>
+                              {member.memberEnd === 'active'
+                                ? 'Aktif Üye'
+                                : member.memberEnd || '-'}
+                            </strong>
                           )}
                         </div>
                       </div>
@@ -366,8 +373,10 @@ export default function AdminMembersPanel({ mode }) {
                             href={normalizeUrl(member.linkedinUrl)}
                             target="_blank"
                             rel="noreferrer"
+                            aria-label="LinkedIn profili"
+                            title="LinkedIn profili"
                           >
-                            Profili aç
+                            Profili Görüntüle
                           </a>
                         ) : (
                           <strong>-</strong>

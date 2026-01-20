@@ -92,9 +92,11 @@ export default function Admin() {
     },
     {
       key: 'project-management',
-      label: 'Proje Yönetimi',
-      eyebrow: 'Proje İşlemleri',
-      description: 'Proje yapısı ve görev düzenlemeleri yakında.',
+      label: 'Tüm Projeler',
+      eyebrow: 'Proje Yönetimi',
+      description:
+        'Projelerin görsellerini, ekip üyelerini ve başarı özetlerini tek panelden yönetin.',
+      href: '/admin/projects',
       icon: (
         <svg viewBox="0 0 24 24">
           <path d="M7.5 11a3.5 3.5 0 1 1 3.5-3.5A3.5 3.5 0 0 1 7.5 11zm9 0a3.5 3.5 0 1 1 3.5-3.5A3.5 3.5 0 0 1 16.5 11zM3 20a4.5 4.5 0 0 1 9 0v1H3zm9.5 1v-1a4.5 4.5 0 0 1 9 0v1z" />
@@ -242,6 +244,9 @@ export default function Admin() {
               {filteredProjectItems.map((item) => {
                 const isLocked =
                   item.key === 'project-create' && userRole === 'lead'
+                const isProjectManagementLocked =
+                  item.key === 'project-management' &&
+                  !['management', 'founder', 'lead'].includes(userRole)
                 if (isLocked) {
                   return (
                     <div
@@ -257,6 +262,25 @@ export default function Admin() {
                       </div>
                       <h2>{item.label}</h2>
                       <p>Proje oluşturma için ek yetki gerekiyor.</p>
+                      <div className="admin-portal-cta">Kilitli</div>
+                    </div>
+                  )
+                }
+                if (isProjectManagementLocked) {
+                  return (
+                    <div
+                      key={item.key}
+                      className="admin-portal-card admin-portal-card-soft"
+                      aria-disabled="true"
+                    >
+                      <div className="admin-portal-card-top">
+                        <div className="admin-portal-icon" aria-hidden="true">
+                          {item.icon}
+                        </div>
+                        <span className="admin-portal-eyebrow">{item.eyebrow}</span>
+                      </div>
+                      <h2>{item.label}</h2>
+                      <p>Bu alana erişim için ek yetki gerekiyor.</p>
                       <div className="admin-portal-cta">Kilitli</div>
                     </div>
                   )

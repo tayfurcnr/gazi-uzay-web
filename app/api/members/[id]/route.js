@@ -88,6 +88,16 @@ export async function PATCH(request, { params }) {
   if (role) data.role = role
   if (status) data.status = status
 
+  if (status === 'APPROVED' && !role) {
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { role: true },
+    })
+    if (targetUser?.role === 'GUEST') {
+      data.role = 'MEMBER'
+    }
+  }
+
   const needsProfileUpdate =
     typeof body.title === 'string' ||
     typeof body.phone === 'string' ||

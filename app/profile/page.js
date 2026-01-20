@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Cropper from 'react-easy-crop'
 import LottieLoader from '../../components/LottieLoader'
 
 const LOADER_SRC = '/lottie/space%20boy%20developer.json'
@@ -35,6 +36,11 @@ export default function Profile() {
   const [saveStatus, setSaveStatus] = useState('')
   const [approvalStatus, setApprovalStatus] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [isCropOpen, setIsCropOpen] = useState(false)
+  const [cropImage, setCropImage] = useState('')
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
   const [errors, setErrors] = useState({
     firstName: '',
     lastName: '',
@@ -112,10 +118,50 @@ export default function Profile() {
     const reader = new FileReader()
     reader.onload = () => {
       const value = String(reader.result || '')
-      localStorage.setItem('demoProfileAvatar', value)
-      setAvatar(value)
+      if (!value) return
+      setCropImage(value)
+      setIsCropOpen(true)
     }
     reader.readAsDataURL(file)
+  }
+
+  const onCropComplete = (_, croppedPixels) => {
+    setCroppedAreaPixels(croppedPixels)
+  }
+
+  const getCroppedImage = async (imageSrc, cropPixels) => {
+    const image = new Image()
+    image.src = imageSrc
+    await new Promise((resolve, reject) => {
+      image.onload = resolve
+      image.onerror = reject
+    })
+    const canvas = document.createElement('canvas')
+    canvas.width = cropPixels.width
+    canvas.height = cropPixels.height
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(
+      image,
+      cropPixels.x,
+      cropPixels.y,
+      cropPixels.width,
+      cropPixels.height,
+      0,
+      0,
+      cropPixels.width,
+      cropPixels.height
+    )
+    return canvas.toDataURL('image/jpeg', 0.92)
+  }
+
+  const confirmCrop = async () => {
+    if (!cropImage || !croppedAreaPixels) return
+    const cropped = await getCroppedImage(cropImage, croppedAreaPixels)
+    localStorage.setItem('demoProfileAvatar', cropped)
+    setAvatar(cropped)
+    setIsCropOpen(false)
+    setCropImage('')
+    setZoom(1)
   }
 
   const handleSaveProfile = async () => {
@@ -444,6 +490,63 @@ export default function Profile() {
         <button type="button" className="profile-save profile-save-full" onClick={handleSaveProfile}>
           Profili Kaydet
         </button>
+        {isCropOpen && (
+          <div className="admin-crop-overlay" onClick={() => setIsCropOpen(false)}>
+            <div
+              className="admin-crop-modal"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="admin-crop-header">
+                <div>
+                  <h2>Görseli Kareye Kırp</h2>
+                  <p>Profil görseli kare olmalıdır.</p>
+                </div>
+                <button
+                  type="button"
+                  className="admin-team-modal-close"
+                  onClick={() => setIsCropOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="admin-crop-area">
+                <Cropper
+                  image={cropImage}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={onCropComplete}
+                />
+              </div>
+              <div className="admin-crop-controls">
+                <label htmlFor="profile-crop-zoom">Yakınlaştır</label>
+                <input
+                  id="profile-crop-zoom"
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.05}
+                  value={zoom}
+                  onChange={(event) => setZoom(Number(event.target.value))}
+                />
+              </div>
+              <div className="admin-team-actions">
+                <button type="button" className="admin-save" onClick={confirmCrop}>
+                  Kırp ve Kaydet
+                </button>
+                <button
+                  type="button"
+                  className="admin-cancel"
+                  onClick={() => setIsCropOpen(false)}
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <input
           ref={fileInputRef}
           type="file"

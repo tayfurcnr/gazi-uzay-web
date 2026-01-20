@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
+import Cropper from 'react-easy-crop'
 
 const INITIAL_FORM = {
   name: '',
@@ -13,6 +14,7 @@ const INITIAL_FORM = {
   leadEmail: '',
   leadPhone: '',
   leadAvatar: '',
+  imageUrl: '',
   year: '',
 }
 
@@ -24,6 +26,11 @@ export default function ProjectCreate() {
   const [isLoadingMembers, setIsLoadingMembers] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState('')
+  const [isCropOpen, setIsCropOpen] = useState(false)
+  const [cropImage, setCropImage] = useState('')
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
   const currentYear = new Date().getFullYear()
   const yearOptions = useMemo(() => {
     const startYear = 2020
@@ -120,10 +127,54 @@ export default function ProjectCreate() {
     }))
   }
 
+  const onCropComplete = (_, croppedPixels) => {
+    setCroppedAreaPixels(croppedPixels)
+  }
+
+  const getCroppedImage = async (imageSrc, cropPixels) => {
+    const image = new Image()
+    image.src = imageSrc
+    await new Promise((resolve, reject) => {
+      image.onload = resolve
+      image.onerror = reject
+    })
+    const canvas = document.createElement('canvas')
+    canvas.width = cropPixels.width
+    canvas.height = cropPixels.height
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(
+      image,
+      cropPixels.x,
+      cropPixels.y,
+      cropPixels.width,
+      cropPixels.height,
+      0,
+      0,
+      cropPixels.width,
+      cropPixels.height
+    )
+    return canvas.toDataURL('image/jpeg', 0.92)
+  }
+
+  const confirmCrop = async () => {
+    if (!cropImage || !croppedAreaPixels) return
+    const cropped = await getCroppedImage(cropImage, croppedAreaPixels)
+    updateField('imageUrl', cropped)
+    setIsCropOpen(false)
+    setCropImage('')
+    setZoom(1)
+  }
+
   const trimmedDescription = form.description.trim()
-  const isDescriptionValid = trimmedDescription.length >= 50
+  const isDescriptionValid =
+    trimmedDescription.length >= 50 && trimmedDescription.length <= 170
+  const isImageValid = Boolean(form.imageUrl)
   const isFormValid = Boolean(
-    form.name.trim() && isDescriptionValid && form.leadId && form.year.trim()
+    form.name.trim() &&
+      isDescriptionValid &&
+      form.leadId &&
+      form.year.trim() &&
+      isImageValid
   )
 
   const handleCreate = async () => {
@@ -139,6 +190,7 @@ export default function ProjectCreate() {
           description: form.description,
           year: form.year,
           leadId: form.leadId,
+          imageUrl: form.imageUrl,
         }),
       })
       if (!response.ok) {
@@ -202,6 +254,41 @@ export default function ProjectCreate() {
                 </select>
               </div>
             </div>
+            <div className="contact-edit-block admin-project-upload">
+              <label className="contact-edit-label">Proje Görseli</label>
+              {isImageValid ? (
+                <div className="admin-project-preview">
+                  <img src={form.imageUrl} alt="Proje görseli" />
+                </div>
+              ) : (
+                <span className="admin-team-hint">
+                  Görsel yüklemek zorunludur.
+                </span>
+              )}
+              <div className="admin-project-upload-row admin-project-upload-center">
+                <label className="admin-project-upload-btn">
+                  Görsel Yükle
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0]
+                      if (!file) return
+                      const reader = new FileReader()
+                      reader.onload = () => {
+                        const result =
+                          typeof reader.result === 'string' ? reader.result : ''
+                        if (result) {
+                          setCropImage(result)
+                          setIsCropOpen(true)
+                        }
+                      }
+                      reader.readAsDataURL(file)
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
             <div className="contact-edit-block">
               <label className="contact-edit-label">Açıklama</label>
               <textarea
@@ -215,7 +302,7 @@ export default function ProjectCreate() {
                   isDescriptionValid ? 'admin-team-hint-ok' : ''
                 }`}
               >
-                Minimum 50 karakter ({trimmedDescription.length}/50)
+                50-170 karakter ({trimmedDescription.length}/170)
               </span>
             </div>
           </div>
@@ -363,6 +450,64 @@ export default function ProjectCreate() {
                       )
                     })
                   )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isCropOpen && (
+            <div className="admin-crop-overlay" onClick={() => setIsCropOpen(false)}>
+              <div
+                className="admin-crop-modal"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="admin-crop-header">
+                  <div>
+                    <h2>Görseli Kareye Kırp</h2>
+                    <p>Proje görseli kare olmalıdır.</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-team-modal-close"
+                    onClick={() => setIsCropOpen(false)}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="admin-crop-area">
+                  <Cropper
+                    image={cropImage}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={onCropComplete}
+                  />
+                </div>
+                <div className="admin-crop-controls">
+                  <label htmlFor="crop-zoom">Yakınlaştır</label>
+                  <input
+                    id="crop-zoom"
+                    type="range"
+                    min={1}
+                    max={3}
+                    step={0.05}
+                    value={zoom}
+                    onChange={(event) => setZoom(Number(event.target.value))}
+                  />
+                </div>
+                <div className="admin-team-actions">
+                  <button type="button" className="admin-save" onClick={confirmCrop}>
+                    Kırp ve Kaydet
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-cancel"
+                    onClick={() => setIsCropOpen(false)}
+                  >
+                    İptal
+                  </button>
                 </div>
               </div>
             </div>

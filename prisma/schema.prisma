@@ -31,6 +31,7 @@ model User {
   status    MemberStatus @default(PENDING)
   profile   Profile?
   leadProjects Project[] @relation("ProjectLead")
+  projectMemberships ProjectMember[]
   accounts  Account[]
   sessions  Session[]
   createdAt DateTime     @default(now())
@@ -142,10 +143,27 @@ model Project {
   id          String   @id @default(cuid())
   name        String
   description String
+  achievement String?
+  driveUrl    String?
+  imageUrl    String?
   year        Int
   leadId      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   lead User @relation("ProjectLead", fields: [leadId], references: [id], onDelete: Restrict)
+  members ProjectMember[]
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      String?
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
 }
