@@ -156,7 +156,11 @@ export default function Profile() {
     localStorage.setItem('demoProfileEmail', trimmedEmail)
     localStorage.setItem('demoProfileMemberStart', memberStart)
     localStorage.setItem('demoProfileMemberEnd', memberEnd)
-    localStorage.setItem('demoProfileStatus', 'pending')
+    const nextStatus =
+      approvalStatus === 'approved' || approvalStatus === 'rejected'
+        ? approvalStatus
+        : 'pending'
+    localStorage.setItem('demoProfileStatus', nextStatus)
     const members = loadMembers()
     const nextMembers = upsertMember(members, {
       id: userId,
@@ -171,7 +175,7 @@ export default function Profile() {
       email: trimmedEmail,
       memberStart,
       memberEnd,
-      status: 'pending',
+      status: nextStatus,
       role: members.find((item) => item.id === userId)?.role || role || 'guest',
       updatedAt: Date.now(),
     })
