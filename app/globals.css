@@ -524,6 +524,42 @@ body {
   border-color: rgba(255, 255, 255, 0.28);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
+
+@media (hover: hover) {
+  .nav-link:hover,
+  .nav-pill:hover,
+  .nav-btn:hover,
+  .sidebar-link:hover,
+  .sidebar-item:hover,
+  .admin-filter:hover,
+  .admin-edit:hover,
+  .admin-save:hover,
+  .admin-cancel:hover,
+  .admin-approve:hover,
+  .admin-reject:hover,
+  .admin-remove:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@media (hover: none) {
+  .nav-link,
+  .nav-pill,
+  .nav-btn,
+  .sidebar-link,
+  .sidebar-item,
+  .admin-filter,
+  .admin-edit,
+  .admin-save,
+  .admin-cancel,
+  .admin-approve,
+  .admin-reject,
+  .admin-remove {
+    transition: none;
+    transform: none;
+    box-shadow: none;
+  }
+}
 .admin-filter-pill {
   border-radius: 999px;
   padding: 8px 14px;
@@ -1168,25 +1204,31 @@ body {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 1100px) {
   .admin-project-title {
     padding-right: 0;
   }
 
   .admin-project-top-actions {
     position: static;
-    align-items: center;
-    flex-direction: row;
+    align-items: flex-start;
+    flex-direction: column;
     justify-content: flex-start;
   }
 
-  .admin-project-header {
-    grid-template-columns: 1fr;
+  .admin-project-card .admin-project-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .admin-project-thumb {
     width: 100%;
-    height: 180px;
+    height: 200px;
+  }
+
+  .admin-project-body {
+    width: 100%;
   }
 
   .admin-project-member-chip {
@@ -1198,6 +1240,44 @@ body {
   }
 
   .admin-project-member-remove {
+    grid-column: 1 / -1;
+    width: auto;
+    text-align: left;
+  }
+
+  .admin-project-achievement-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-project-member-pill {
+    grid-template-columns: auto 1fr;
+  }
+
+  .admin-project-member-pill-role {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  .admin-project-edit .admin-team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-project-edit .admin-project-upload-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-project-edit .admin-project-member-chip {
+    grid-template-columns: auto 1fr;
+  }
+
+  .admin-project-edit .admin-project-member-role {
+    grid-column: 2 / -1;
+    margin-left: 0;
+  }
+
+  .admin-project-edit .admin-project-member-remove {
     grid-column: 1 / -1;
     width: auto;
     text-align: left;
@@ -2224,6 +2304,61 @@ body {
 
   .admin-member-line {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-member-header {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-member-profile {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-member-meta {
+    justify-items: start;
+  }
+
+  .admin-member-line-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-member-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-member-actions > * {
+    width: 100%;
+  }
+
+  .admin-role-select,
+  .admin-role-static {
+    order: -1;
+  }
+
+  .admin-member-toggle-right {
+    margin-left: 0;
+  }
+
+  .admin-filters {
+    align-items: stretch;
+  }
+
+  .admin-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-filter-row .admin-search {
+    width: 100%;
+  }
+
+  .admin-filter-row .admin-filter {
+    width: 100%;
+    justify-content: center;
   }
 }
 .profile-status {
