@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 const MEMBERS_KEY = 'demoMembers'
 
 const roleOptions = [
+  { value: 'founder', label: 'Kurucu', disabled: true },
+  { value: 'guest', label: 'Misafir' },
   { value: 'member', label: 'Üye' },
   { value: 'lead', label: 'Ekip Lideri' },
   { value: 'management', label: 'Yönetim' },
@@ -31,7 +33,7 @@ export default function Admin() {
 
   useEffect(() => {
     const role = localStorage.getItem('demoRole') || ''
-    if (role !== 'management') {
+    if (role !== 'management' && role !== 'founder') {
       router.replace('/profile')
       return
     }
@@ -45,7 +47,10 @@ export default function Admin() {
   }
 
   const updateMember = (id, updates) => {
-    const next = members.map((member) =>
+    if (updates.role === 'founder') {
+      return
+    }
+    let next = members.map((member) =>
       member.id === id ? { ...member, ...updates } : member
     )
     persistMembers(next)
@@ -179,9 +184,14 @@ export default function Admin() {
                     className="contact-edit-input contact-edit-select admin-role-select"
                     value={member.role || 'member'}
                     onChange={(event) => updateMember(member.id, { role: event.target.value })}
+                    disabled={member.role === 'founder'}
                   >
                     {roleOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
+                      <option
+                        key={option.value}
+                        value={option.value}
+                        disabled={option.disabled}
+                      >
                         {option.label}
                       </option>
                     ))}

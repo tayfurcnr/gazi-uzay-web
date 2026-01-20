@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 const roleLabels = {
+  guest: 'Misafir',
+  founder: 'Kurucu',
   management: 'Yönetim Ekibi',
   lead: 'Ekip Lideri',
   member: 'Üye',
@@ -170,7 +172,7 @@ export default function Profile() {
       memberStart,
       memberEnd,
       status: 'pending',
-      role: members.find((item) => item.id === userId)?.role || 'member',
+      role: members.find((item) => item.id === userId)?.role || role || 'guest',
       updatedAt: Date.now(),
     })
     localStorage.setItem(MEMBERS_KEY, JSON.stringify(nextMembers))
@@ -241,6 +243,39 @@ export default function Profile() {
             </div>
           </div>
           <div className="profile-row profile-row-input profile-field">
+            <span>E-posta</span>
+            <div className="profile-input-wrap">
+              {errors.email && <em className="profile-error">{errors.email}</em>}
+              <input
+                className="contact-edit-input profile-input"
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  setErrors((prev) => ({ ...prev, email: '' }))
+                }}
+                placeholder="ornek@mail.com"
+                inputMode="email"
+                readOnly
+              />
+            </div>
+          </div>
+          <div className="profile-row profile-row-input profile-field">
+            <span>Telefon</span>
+            <div className="profile-input-wrap">
+              {errors.phone && <em className="profile-error">{errors.phone}</em>}
+              <input
+                className="contact-edit-input profile-input"
+                value={phone}
+                onChange={(event) => {
+                  setPhone(event.target.value)
+                  setErrors((prev) => ({ ...prev, phone: '' }))
+                }}
+                placeholder="05xx xxx xx xx"
+                inputMode="tel"
+              />
+            </div>
+          </div>
+          <div className="profile-row profile-row-input profile-field">
             <span>Topluluk Ünvanı</span>
             <div className="profile-input-wrap">
               <input
@@ -298,38 +333,6 @@ export default function Profile() {
               </select>
             </div>
           </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>Telefon</span>
-            <div className="profile-input-wrap">
-              {errors.phone && <em className="profile-error">{errors.phone}</em>}
-              <input
-                className="contact-edit-input profile-input"
-                value={phone}
-                onChange={(event) => {
-                  setPhone(event.target.value)
-                  setErrors((prev) => ({ ...prev, phone: '' }))
-                }}
-                placeholder="05xx xxx xx xx"
-                inputMode="tel"
-              />
-            </div>
-          </div>
-          <div className="profile-row profile-row-input profile-field">
-            <span>E-posta</span>
-            <div className="profile-input-wrap">
-              {errors.email && <em className="profile-error">{errors.email}</em>}
-              <input
-                className="contact-edit-input profile-input"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value)
-                  setErrors((prev) => ({ ...prev, email: '' }))
-                }}
-                placeholder="ornek@mail.com"
-                inputMode="email"
-              />
-            </div>
-          </div>
           <div className="profile-row profile-row-input profile-field profile-row-two">
             <div className="profile-row-inline">
               <span>Başlangıç</span>
@@ -382,10 +385,6 @@ export default function Profile() {
                 </select>
               </div>
             </div>
-          </div>
-          <div className="profile-row">
-            <span>UUID</span>
-            <strong className="profile-uuid">{userId || '-'}</strong>
           </div>
           {saveStatus && <p className="profile-status">{saveStatus}</p>}
         </div>

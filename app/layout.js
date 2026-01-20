@@ -1,5 +1,6 @@
 import './globals.css'
 import AppShell from '../components/AppShell'
+import Providers from '../components/Providers'
 
 export default function RootLayout({ children }) {
   return (
@@ -11,7 +12,9 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <div className="app">
-          <AppShell>{children}</AppShell>
+          <Providers>
+            <AppShell>{children}</AppShell>
+          </Providers>
         </div>
       </body>
     </html>

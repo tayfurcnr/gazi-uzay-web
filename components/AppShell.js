@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Sidebar from './Sidebar'
 import LoginModal from './LoginModal'
+import AuthSync from './AuthSync'
 
 export default function AppShell({ children }) {
   const [isLoginOpen, setIsLoginOpen] = useState(false)
@@ -35,6 +36,7 @@ export default function AppShell({ children }) {
 
   return (
     <>
+      <AuthSync />
       <Sidebar onLoginClick={() => setIsLoginOpen(true)} />
       <main className="main-content">
         {isBlocked ? (

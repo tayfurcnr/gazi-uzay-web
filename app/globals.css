@@ -358,6 +358,11 @@ body {
   max-width: none;
 }
 
+.profile-field .profile-input[readonly] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .profile-row-two {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
@@ -1150,6 +1155,24 @@ body {
   display: grid;
   gap: 16px;
   justify-items: center;
+}
+
+.login-actions {
+  width: 100%;
+  max-width: 720px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.login-actions .login-google-btn {
+  max-width: 340px;
+}
+
+@media (max-width: 680px) {
+  .login-actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 .login-google-btn {
@@ -2162,10 +2185,12 @@ body {
   justify-content: center;
   z-index: 1200;
   backdrop-filter: blur(4px);
+  overflow-y: auto;
 }
 
 .announcement-modal {
   width: min(90vw, 560px);
+  max-height: 90vh;
   background: rgba(0, 0, 0, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
@@ -2174,6 +2199,21 @@ body {
   position: relative;
   display: grid;
   gap: 10px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.announcement-modal::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@media (max-width: 700px) {
+  .announcement-modal-overlay {
+    align-items: flex-start;
+    padding: 24px 16px 32px;
+  }
 }
 
 .announcement-modal-topbar {

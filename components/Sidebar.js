@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { signOut } from 'next-auth/react'
 
 export default function Sidebar({ onLoginClick = () => {} }) {
   const pathname = usePathname()
@@ -45,6 +46,7 @@ export default function Sidebar({ onLoginClick = () => {} }) {
   }, [isOpen])
 
   const handleLogout = () => {
+    signOut({ callbackUrl: '/' })
     localStorage.removeItem('demoAuth')
     localStorage.removeItem('demoRole')
     setUserRole('')
@@ -64,7 +66,10 @@ export default function Sidebar({ onLoginClick = () => {} }) {
     { href: '/sponsors', label: 'SPONSORLARIMIZ' },
     { href: '/contact', label: 'İLETİŞİM' },
   ]
-  const adminItems = userRole === 'management' ? [{ href: '/admin', label: 'YÖNETİM PANELİ' }] : []
+  const adminItems =
+    userRole === 'management' || userRole === 'founder'
+      ? [{ href: '/admin', label: 'YÖNETİM PANELİ' }]
+      : []
 
   return (
     <>

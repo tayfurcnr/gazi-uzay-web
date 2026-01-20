@@ -14,6 +14,20 @@ const authOptions = {
   session: {
     strategy: 'database',
   },
+  callbacks: {
+    session({ session, user }) {
+      if (user?.role) {
+        session.user.role = user.role
+      }
+      return session
+    },
+  },
+  debug: true,
+  logger: {
+    error(code, metadata) {
+      console.error('NextAuth error:', code, metadata)
+    },
+  },
 }
 
 const handler = NextAuth(authOptions)
