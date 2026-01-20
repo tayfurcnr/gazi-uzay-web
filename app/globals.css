@@ -1168,6 +1168,42 @@ body {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+@media (max-width: 720px) {
+  .admin-project-title {
+    padding-right: 0;
+  }
+
+  .admin-project-top-actions {
+    position: static;
+    align-items: center;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .admin-project-header {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-project-thumb {
+    width: 100%;
+    height: 180px;
+  }
+
+  .admin-project-member-chip {
+    grid-template-columns: auto 1fr;
+  }
+
+  .admin-project-member-role {
+    grid-column: 1 / -1;
+  }
+
+  .admin-project-member-remove {
+    grid-column: 1 / -1;
+    width: auto;
+    text-align: left;
+  }
+}
+
 .admin-project-separator {
   height: 1px;
   background: rgba(255, 255, 255, 0.08);
