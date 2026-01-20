@@ -10,28 +10,6 @@ const roleLabels = {
   member: 'Üye',
 }
 
-const MEMBERS_KEY = 'demoMembers'
-
-const loadMembers = () => {
-  try {
-    const raw = localStorage.getItem(MEMBERS_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-const upsertMember = (members, next) => {
-  const index = members.findIndex((member) => member.id === next.id)
-  if (index >= 0) {
-    const copy = [...members]
-    copy[index] = { ...copy[index], ...next }
-    return copy
-  }
-  return [...members, next]
-}
-
 export default function Profile() {
   const [role, setRole] = useState('')
   const [userId, setUserId] = useState('')
@@ -60,60 +38,77 @@ export default function Profile() {
   const fileInputRef = useRef(null)
 
   useEffect(() => {
-    const updateProfile = () => {
+    let isActive = true
+
+    const applyLocalProfile = () => {
       const storedRole = localStorage.getItem('demoRole') || ''
-      let storedUserId = localStorage.getItem('demoUserId') || ''
-      if (!storedUserId) {
-        storedUserId = window.crypto?.randomUUID?.() || `user-${Date.now()}`
-        localStorage.setItem('demoUserId', storedUserId)
-      }
-      const avatarKey = `demoAvatar:${storedUserId}`
+      const storedUserId = localStorage.getItem('demoUserId') || ''
       setRole(storedRole)
       setUserId(storedUserId)
-      setAvatar(localStorage.getItem(avatarKey) || '')
-      const members = loadMembers()
-      const member = members.find((item) => item.id === storedUserId)
-      setFirstName(member?.firstName || localStorage.getItem('demoProfileName') || '')
-      setLastName(member?.lastName || localStorage.getItem('demoProfileSurname') || '')
-      setTitle(member?.title || localStorage.getItem('demoProfileTitle') || '')
-      setPosition(member?.position || localStorage.getItem('demoProfilePosition') || '')
-      setCompany(member?.company || localStorage.getItem('demoProfileCompany') || '')
-      setLinkedinUrl(member?.linkedinUrl || localStorage.getItem('demoProfileLinkedin') || '')
-      setGender(member?.gender || localStorage.getItem('demoProfileGender') || '')
-      setPhone(member?.phone || localStorage.getItem('demoProfilePhone') || '')
-      setEmail(member?.email || localStorage.getItem('demoProfileEmail') || '')
-      setMemberStart(member?.memberStart || localStorage.getItem('demoProfileMemberStart') || '')
-      setMemberEnd(member?.memberEnd || localStorage.getItem('demoProfileMemberEnd') || '')
-      setApprovalStatus(member?.status || localStorage.getItem('demoProfileStatus') || 'pending')
+      setAvatar(localStorage.getItem('demoProfileAvatar') || '')
+      setFirstName(localStorage.getItem('demoProfileName') || '')
+      setLastName(localStorage.getItem('demoProfileSurname') || '')
+      setTitle(localStorage.getItem('demoProfileTitle') || '')
+      setPosition(localStorage.getItem('demoProfilePosition') || '')
+      setCompany(localStorage.getItem('demoProfileCompany') || '')
+      setLinkedinUrl(localStorage.getItem('demoProfileLinkedin') || '')
+      setGender(localStorage.getItem('demoProfileGender') || '')
+      setPhone(localStorage.getItem('demoProfilePhone') || '')
+      setEmail(localStorage.getItem('demoProfileEmail') || '')
+      setMemberStart(localStorage.getItem('demoProfileMemberStart') || '')
+      setMemberEnd(localStorage.getItem('demoProfileMemberEnd') || '')
+      setApprovalStatus(localStorage.getItem('demoProfileStatus') || 'pending')
     }
+
+    const updateProfile = async () => {
+      try {
+        const response = await fetch('/api/members/me')
+        if (!response.ok) {
+          if (isActive) applyLocalProfile()
+          return
+        }
+        const data = await response.json()
+        if (!isActive) return
+        setRole(data.role || '')
+        setUserId(data.id || '')
+        setAvatar(data.avatar || localStorage.getItem('demoProfileAvatar') || '')
+        setFirstName(data.firstName || '')
+        setLastName(data.lastName || '')
+        setTitle(data.title || '')
+        setPosition(data.position || '')
+        setCompany(data.company || '')
+        setLinkedinUrl(data.linkedinUrl || '')
+        setGender(data.gender || '')
+        setPhone(data.phone || '')
+        setEmail(data.email || '')
+        setMemberStart(data.memberStart || '')
+        setMemberEnd(data.memberEnd || '')
+        setApprovalStatus(data.status || 'pending')
+      } catch {
+        if (isActive) applyLocalProfile()
+      }
+    }
+
     updateProfile()
     window.addEventListener('demoAuthChanged', updateProfile)
-    return () => window.removeEventListener('demoAuthChanged', updateProfile)
+    return () => {
+      isActive = false
+      window.removeEventListener('demoAuthChanged', updateProfile)
+    }
   }, [])
 
   const handleAvatarUpload = (file) => {
-    if (!file || !userId) return
+    if (!file) return
     const reader = new FileReader()
     reader.onload = () => {
       const value = String(reader.result || '')
-      const avatarKey = `demoAvatar:${userId}`
-      localStorage.setItem(avatarKey, value)
+      localStorage.setItem('demoProfileAvatar', value)
       setAvatar(value)
-      try {
-        const raw = localStorage.getItem(MEMBERS_KEY)
-        const members = raw ? JSON.parse(raw) : []
-        if (Array.isArray(members)) {
-          const next = members.map((member) =>
-            member.id === userId ? { ...member, avatar: value } : member
-          )
-          localStorage.setItem(MEMBERS_KEY, JSON.stringify(next))
-        }
-      } catch {}
     }
     reader.readAsDataURL(file)
   }
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     const trimmedName = firstName.trim()
     const trimmedSurname = lastName.trim()
     const trimmedPhone = phone.trim()
@@ -145,25 +140,7 @@ export default function Profile() {
       setSaveStatus('')
       return
     }
-    localStorage.setItem('demoProfileName', trimmedName)
-    localStorage.setItem('demoProfileSurname', trimmedSurname)
-    localStorage.setItem('demoProfileTitle', title.trim())
-    localStorage.setItem('demoProfilePosition', position.trim())
-    localStorage.setItem('demoProfileCompany', company.trim())
-    localStorage.setItem('demoProfileLinkedin', linkedinUrl.trim())
-    localStorage.setItem('demoProfileGender', gender)
-    localStorage.setItem('demoProfilePhone', trimmedPhone)
-    localStorage.setItem('demoProfileEmail', trimmedEmail)
-    localStorage.setItem('demoProfileMemberStart', memberStart)
-    localStorage.setItem('demoProfileMemberEnd', memberEnd)
-    const nextStatus =
-      approvalStatus === 'approved' || approvalStatus === 'rejected'
-        ? approvalStatus
-        : 'pending'
-    localStorage.setItem('demoProfileStatus', nextStatus)
-    const members = loadMembers()
-    const nextMembers = upsertMember(members, {
-      id: userId,
+    const payload = {
       firstName: trimmedName,
       lastName: trimmedSurname,
       title: title.trim(),
@@ -175,14 +152,45 @@ export default function Profile() {
       email: trimmedEmail,
       memberStart,
       memberEnd,
-      status: nextStatus,
-      role: members.find((item) => item.id === userId)?.role || role || 'guest',
-      updatedAt: Date.now(),
-    })
-    localStorage.setItem(MEMBERS_KEY, JSON.stringify(nextMembers))
-    setApprovalStatus('pending')
-    setSaveStatus('Profil güncellendi.')
-    window.dispatchEvent(new Event('demoAuthChanged'))
+      avatar,
+    }
+
+    try {
+      const response = await fetch('/api/members/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!response.ok) {
+        setSaveStatus('Profil kaydedilemedi.')
+        return
+      }
+      const data = await response.json()
+      setApprovalStatus(data.status || 'pending')
+      setSaveStatus('Profil güncellendi.')
+
+      localStorage.setItem('demoProfileName', data.firstName || trimmedName)
+      localStorage.setItem('demoProfileSurname', data.lastName || trimmedSurname)
+      localStorage.setItem('demoProfileTitle', data.title || title.trim())
+      localStorage.setItem('demoProfilePosition', data.position || position.trim())
+      localStorage.setItem('demoProfileCompany', data.company || company.trim())
+      localStorage.setItem('demoProfileLinkedin', data.linkedinUrl || linkedinUrl.trim())
+      localStorage.setItem('demoProfileGender', data.gender || gender)
+      localStorage.setItem('demoProfilePhone', data.phone || trimmedPhone)
+      localStorage.setItem('demoProfileEmail', data.email || trimmedEmail)
+      localStorage.setItem('demoProfileMemberStart', data.memberStart || memberStart)
+      localStorage.setItem('demoProfileMemberEnd', data.memberEnd || memberEnd)
+      localStorage.setItem('demoProfileStatus', data.status || 'pending')
+      if (data.avatar) {
+        localStorage.setItem('demoProfileAvatar', data.avatar)
+      }
+      if (data.role) {
+        localStorage.setItem('demoRole', data.role)
+      }
+      window.dispatchEvent(new Event('demoAuthChanged'))
+    } catch {
+      setSaveStatus('Profil kaydedilemedi.')
+    }
   }
 
   return (

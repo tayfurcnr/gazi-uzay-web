@@ -3,33 +3,11 @@
 import { useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 
-const MEMBERS_KEY = 'demoMembers'
-
 const getNameParts = (fullName = '') => {
   const parts = fullName.trim().split(/\s+/).filter(Boolean)
   if (!parts.length) return { firstName: '', lastName: '' }
   if (parts.length === 1) return { firstName: parts[0], lastName: '' }
   return { firstName: parts[0], lastName: parts.slice(1).join(' ') }
-}
-
-const loadMembers = () => {
-  try {
-    const raw = localStorage.getItem(MEMBERS_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-const upsertMember = (members, next) => {
-  const index = members.findIndex((member) => member.id === next.id)
-  if (index >= 0) {
-    const copy = [...members]
-    copy[index] = { ...copy[index], ...next }
-    return copy
-  }
-  return [...members, next]
 }
 
 export default function AuthSync() {
@@ -40,7 +18,7 @@ export default function AuthSync() {
 
     if (session?.user) {
       const { firstName, lastName } = getNameParts(session.user.name || '')
-      const nextUserId = session.user.email || session.user.name || ''
+      const nextUserId = session.user.id || session.user.email || session.user.name || ''
 
       localStorage.setItem('demoAuth', 'true')
       const roleValue = session.user.role || 'guest'
@@ -53,21 +31,42 @@ export default function AuthSync() {
       if (nextUserId) {
         localStorage.setItem('demoUserId', nextUserId)
       }
-      if (nextUserId) {
-        const members = loadMembers()
-        const nextMembers = upsertMember(members, {
-          id: nextUserId,
-          firstName,
-          lastName,
-          email: session.user.email || '',
-          avatar: session.user.image || '',
-          status: localStorage.getItem('demoProfileStatus') || 'pending',
-          role: roleValue.toLowerCase(),
-          updatedAt: Date.now(),
-        })
-        localStorage.setItem(MEMBERS_KEY, JSON.stringify(nextMembers))
+      const syncProfile = async () => {
+        try {
+          const response = await fetch('/api/members/me')
+          if (!response.ok) {
+            window.dispatchEvent(new Event('demoAuthChanged'))
+            return
+          }
+          const data = await response.json()
+          localStorage.setItem('demoProfileName', data.firstName || '')
+          localStorage.setItem('demoProfileSurname', data.lastName || '')
+          localStorage.setItem('demoProfileEmail', data.email || '')
+          localStorage.setItem('demoProfilePhone', data.phone || '')
+          localStorage.setItem('demoProfileTitle', data.title || '')
+          localStorage.setItem('demoProfilePosition', data.position || '')
+          localStorage.setItem('demoProfileCompany', data.company || '')
+          localStorage.setItem('demoProfileLinkedin', data.linkedinUrl || '')
+          localStorage.setItem('demoProfileGender', data.gender || '')
+          localStorage.setItem('demoProfileMemberStart', data.memberStart || '')
+          localStorage.setItem('demoProfileMemberEnd', data.memberEnd || '')
+          localStorage.setItem('demoProfileStatus', data.status || 'pending')
+          if (data.avatar) {
+            localStorage.setItem('demoProfileAvatar', data.avatar)
+          }
+          if (data.id) {
+            localStorage.setItem('demoUserId', data.id)
+          }
+          if (data.role) {
+            localStorage.setItem('demoRole', data.role)
+          }
+        } catch {
+          // fall back to session-based defaults
+        } finally {
+          window.dispatchEvent(new Event('demoAuthChanged'))
+        }
       }
-      window.dispatchEvent(new Event('demoAuthChanged'))
+      syncProfile()
       return
     }
 

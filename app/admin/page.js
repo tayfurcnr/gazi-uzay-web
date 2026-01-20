@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-const MEMBERS_KEY = 'demoMembers'
-
 const roleOptions = [
   { value: 'founder', label: 'Kurucu', disabled: true },
   { value: 'guest', label: 'Misafir' },
@@ -12,16 +10,6 @@ const roleOptions = [
   { value: 'lead', label: 'Ekip Lideri' },
   { value: 'management', label: 'Yönetim' },
 ]
-
-const loadMembers = () => {
-  try {
-    const raw = localStorage.getItem(MEMBERS_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
 
 export default function Admin() {
   const [isAllowed, setIsAllowed] = useState(false)
@@ -38,32 +26,43 @@ export default function Admin() {
       return
     }
     setIsAllowed(true)
-    setMembers(loadMembers())
+    const fetchMembers = async () => {
+      try {
+        const response = await fetch('/api/members')
+        if (!response.ok) return
+        const data = await response.json()
+        setMembers(Array.isArray(data) ? data : [])
+      } catch {}
+    }
+    fetchMembers()
   }, [router])
 
-  const persistMembers = (next) => {
-    setMembers(next)
-    localStorage.setItem(MEMBERS_KEY, JSON.stringify(next))
-  }
-
-  const updateMember = (id, updates) => {
+  const updateMember = async (id, updates) => {
     if (updates.role === 'founder') {
       return
     }
-    let next = members.map((member) =>
-      member.id === id ? { ...member, ...updates } : member
-    )
-    persistMembers(next)
-    const currentUserId = localStorage.getItem('demoUserId') || ''
-    if (currentUserId && currentUserId === id) {
-      if (updates.role) {
-        localStorage.setItem('demoRole', updates.role)
+    try {
+      const response = await fetch(`/api/members/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+      if (!response.ok) return
+      const updated = await response.json()
+      setMembers((prev) =>
+        prev.map((member) => (member.id === id ? updated : member))
+      )
+      const currentUserId = localStorage.getItem('demoUserId') || ''
+      if (currentUserId && currentUserId === id) {
+        if (updated.role) {
+          localStorage.setItem('demoRole', updated.role)
+        }
+        if (updated.status) {
+          localStorage.setItem('demoProfileStatus', updated.status)
+        }
+        window.dispatchEvent(new Event('demoAuthChanged'))
       }
-      if (updates.status) {
-        localStorage.setItem('demoProfileStatus', updates.status)
-      }
-      window.dispatchEvent(new Event('demoAuthChanged'))
-    }
+    } catch {}
   }
 
   if (!isAllowed) {
@@ -84,9 +83,12 @@ export default function Admin() {
     return haystack.includes(query.trim().toLowerCase())
   })
 
-  const removeMember = (id) => {
-    const next = members.filter((member) => member.id !== id)
-    persistMembers(next)
+  const removeMember = async (id) => {
+    try {
+      const response = await fetch(`/api/members/${id}`, { method: 'DELETE' })
+      if (!response.ok) return
+      setMembers((prev) => prev.filter((member) => member.id !== id))
+    } catch {}
   }
 
   return (

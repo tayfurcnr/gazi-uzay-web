@@ -3,7 +3,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from '../../../../lib/prisma'
 
-const authOptions = {
+export const authOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -16,6 +16,9 @@ const authOptions = {
   },
   callbacks: {
     session({ session, user }) {
+      if (user?.id) {
+        session.user.id = user.id
+      }
       if (user?.role) {
         session.user.role = user.role
       }

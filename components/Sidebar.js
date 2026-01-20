@@ -26,13 +26,9 @@ export default function Sidebar({ onLoginClick = () => {} }) {
       const fullName = `${firstName} ${lastName}`.trim()
       setProfileName(fullName || 'Profil')
       setProfileTitle(localStorage.getItem('demoProfileTitle') || 'Ünvan')
-      const userId = localStorage.getItem('demoUserId') || ''
-      if (userId) {
-        const avatarKey = `demoAvatar:${userId}`
-        setProfileAvatar(localStorage.getItem(avatarKey) || '/avatar-placeholder.svg')
-      } else {
-        setProfileAvatar('/avatar-placeholder.svg')
-      }
+      setProfileAvatar(
+        localStorage.getItem('demoProfileAvatar') || '/avatar-placeholder.svg'
+      )
     }
     updateAuth()
     window.addEventListener('demoAuthChanged', updateAuth)
