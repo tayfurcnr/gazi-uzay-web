@@ -566,6 +566,365 @@ body {
   margin-top: 28px;
 }
 
+.admin-team-form {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.admin-team-card {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.55);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.admin-team-card h2 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.6px;
+}
+
+.admin-team-form .contact-edit-block {
+  justify-items: start;
+  text-align: left;
+}
+
+.admin-team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-team-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-team-status {
+  align-self: center;
+  font-size: 12px;
+  color: #9aa4b2;
+}
+
+.admin-team-hint {
+  font-size: 11px;
+  color: #fca5a5;
+}
+
+.admin-team-hint-ok {
+  color: #86efac;
+}
+
+.admin-team-leader-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.admin-team-pick {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(127, 231, 255, 0.35);
+  background: rgba(127, 231, 255, 0.12);
+  color: #bfe9ff;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.admin-team-pick:hover {
+  border-color: rgba(127, 231, 255, 0.6);
+}
+
+.admin-team-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.admin-team-search {
+  position: relative;
+}
+
+.admin-team-results {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 10, 10, 0.96);
+  display: grid;
+  gap: 4px;
+  padding: 6px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.admin-team-result {
+  border: 0;
+  background: rgba(255, 255, 255, 0.03);
+  color: #e5e7eb;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.admin-team-result-card {
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-team-result-avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+
+.admin-team-result-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-team-selected-card {
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  column-gap: 16px;
+}
+
+.admin-team-avatar-stack {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.admin-team-avatar-stack .admin-team-role {
+  padding: 2px 8px;
+  font-size: 9px;
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.admin-team-result-info {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-team-result-info strong {
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.admin-team-result-info span {
+  color: #9aa4b2;
+  font-size: 11px;
+}
+
+.admin-team-result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #cbd5f5;
+  font-size: 11px;
+}
+
+.admin-team-contact {
+  display: grid;
+  gap: 2px;
+  font-size: 11px;
+  color: #cbd5f5;
+}
+
+.admin-team-contact span {
+  color: #cbd5f5;
+}
+
+.admin-team-role {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 9px;
+  color: #ffffff;
+}
+
+.admin-team-role-founder {
+  border-color: rgba(250, 204, 21, 0.6);
+  color: #fde047;
+}
+
+.admin-team-role-management {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fecaca;
+}
+
+.admin-team-role-lead {
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #bfdbfe;
+}
+
+.admin-team-role-member {
+  border-color: rgba(148, 163, 184, 0.5);
+  color: #e2e8f0;
+}
+
+.admin-team-result:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.admin-team-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1400;
+  backdrop-filter: blur(6px);
+  padding: 24px;
+}
+
+.admin-team-modal {
+  width: min(90vw, 520px);
+  background: rgba(0, 0, 0, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+.admin-team-modal-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-team-modal-top h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.admin-team-modal-top p {
+  margin: 4px 0 0;
+  color: #9aa4b2;
+  font-size: 12px;
+}
+
+.admin-team-modal-close {
+  border: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.admin-team-modal-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.admin-team-summary {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  width: 100%;
+}
+
+.admin-team-summary span {
+  color: #9aa4b2;
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.admin-team-summary strong {
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.admin-team-selected {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-team-selected-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+.admin-team-selected-card .admin-team-result-info {
+  gap: 6px;
+}
+
+.admin-team-selected-card .admin-team-result-meta {
+  row-gap: 4px;
+}
+
+.admin-team-clear {
+  border: 1px solid rgba(255, 110, 110, 0.4);
+  background: rgba(255, 80, 80, 0.16);
+  color: #ff9a9a;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.admin-team-clear:hover {
+  border-color: rgba(255, 110, 110, 0.7);
+}
+
+.admin-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 800px) {
+  .admin-team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-team-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-team-modal {
+    width: 100%;
+  }
+}
+
 .admin-member-card {
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);

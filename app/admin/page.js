@@ -11,6 +11,7 @@ export default function Admin() {
   const [pendingMembers, setPendingMembers] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isMembersOpen, setIsMembersOpen] = useState(true)
+  const [isProjectsOpen, setIsProjectsOpen] = useState(true)
   const [isTeamsOpen, setIsTeamsOpen] = useState(true)
   const [portalQuery, setPortalQuery] = useState('')
   const [userRole, setUserRole] = useState('')
@@ -75,6 +76,33 @@ export default function Admin() {
     },
   ]
 
+  const projectItems = [
+    {
+      key: 'project-create',
+      label: 'Proje Oluştur',
+      eyebrow: 'Proje İşlemleri',
+      description:
+        'Yeni projenin adını, yılını ve liderini belirleyerek kapsam bilgisini kayda alın.',
+      href: '/admin/projects/create',
+      icon: (
+        <svg viewBox="0 0 24 24">
+          <path d="M12 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 8a6 6 0 0 1 6 6v1H6v-1a6 6 0 0 1 6-6zm7-2h-2V9h-2V7h2V5h2v2h2v2h-2z" />
+        </svg>
+      ),
+    },
+    {
+      key: 'project-management',
+      label: 'Proje Yönetimi',
+      eyebrow: 'Proje İşlemleri',
+      description: 'Proje yapısı ve görev düzenlemeleri yakında.',
+      icon: (
+        <svg viewBox="0 0 24 24">
+          <path d="M7.5 11a3.5 3.5 0 1 1 3.5-3.5A3.5 3.5 0 0 1 7.5 11zm9 0a3.5 3.5 0 1 1 3.5-3.5A3.5 3.5 0 0 1 16.5 11zM3 20a4.5 4.5 0 0 1 9 0v1H3zm9.5 1v-1a4.5 4.5 0 0 1 9 0v1z" />
+        </svg>
+      ),
+    },
+  ]
+
   const teamItems = [
     {
       key: 'team-management',
@@ -105,6 +133,10 @@ export default function Admin() {
     return haystack.includes(portalQuery.trim().toLowerCase())
   })
 
+  const filteredProjectItems = projectItems.filter((item) => {
+    const haystack = `${item.label} ${item.eyebrow} ${item.description}`.toLowerCase()
+    return haystack.includes(portalQuery.trim().toLowerCase())
+  })
   const filteredTeamItems = teamItems.filter((item) => {
     const haystack = `${item.label} ${item.eyebrow} ${item.description}`.toLowerCase()
     return haystack.includes(portalQuery.trim().toLowerCase())
@@ -164,7 +196,7 @@ export default function Admin() {
                         </div>
                         <div className="admin-portal-count">{item.count}</div>
                         <h2>{item.label}</h2>
-                        <p>Yalnızca yönetim ve kurucu erişebilir.</p>
+                        <p>Onay ekranına erişim için ek yetki gerekiyor.</p>
                         <div className="admin-portal-cta">Kilitli</div>
                       </div>
                     )
@@ -191,6 +223,81 @@ export default function Admin() {
                   )
                 })
               )}
+            </div>
+          )}
+        </div>
+        <div className="admin-portal-section">
+          <button
+            type="button"
+            className="admin-portal-section-toggle"
+            onClick={() => setIsProjectsOpen((prev) => !prev)}
+          >
+            <span>Proje İşlemleri</span>
+            <span className={`admin-portal-chevron ${isProjectsOpen ? 'open' : ''}`}>
+              ▾
+            </span>
+          </button>
+          {isProjectsOpen && (
+            <div className="admin-portal-grid">
+              {filteredProjectItems.map((item) => {
+                const isLocked =
+                  item.key === 'project-create' && userRole === 'lead'
+                if (isLocked) {
+                  return (
+                    <div
+                      key={item.key}
+                      className="admin-portal-card admin-portal-card-soft"
+                      aria-disabled="true"
+                    >
+                      <div className="admin-portal-card-top">
+                        <div className="admin-portal-icon" aria-hidden="true">
+                          {item.icon}
+                        </div>
+                        <span className="admin-portal-eyebrow">{item.eyebrow}</span>
+                      </div>
+                      <h2>{item.label}</h2>
+                      <p>Proje oluşturma için ek yetki gerekiyor.</p>
+                      <div className="admin-portal-cta">Kilitli</div>
+                    </div>
+                  )
+                }
+                if (item.href) {
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      className={`admin-portal-card`}
+                    >
+                      <div className="admin-portal-card-top">
+                        <div className="admin-portal-icon" aria-hidden="true">
+                          {item.icon}
+                        </div>
+                        <span className="admin-portal-eyebrow">{item.eyebrow}</span>
+                      </div>
+                      <h2>{item.label}</h2>
+                      <p>{item.description}</p>
+                      <div className="admin-portal-cta">Ekrana git →</div>
+                    </Link>
+                  )
+                }
+                return (
+                  <div
+                    key={item.key}
+                    className="admin-portal-card admin-portal-card-soft"
+                    aria-disabled="true"
+                  >
+                    <div className="admin-portal-card-top">
+                      <div className="admin-portal-icon" aria-hidden="true">
+                        {item.icon}
+                      </div>
+                      <span className="admin-portal-eyebrow">{item.eyebrow}</span>
+                    </div>
+                    <h2>{item.label}</h2>
+                    <p>{item.description}</p>
+                    <div className="admin-portal-cta">Yakında</div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
