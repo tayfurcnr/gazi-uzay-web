@@ -226,7 +226,7 @@ export default function Contact() {
               />
             </div>
           ) : (
-            <p className="page-subtitle page-subtitle-strong">{data.bannerSubtitle}</p>
+            <h1 className="page-title">{data.bannerSubtitle}</h1>
           )}
           {isEditing ? (
             <div className="contact-edit-block">
@@ -238,7 +238,7 @@ export default function Contact() {
               />
             </div>
           ) : (
-            <p className="contact-banner-text">{data.bannerText}</p>
+            <p className="contact-banner-text page-subtitle">{data.bannerText}</p>
           )}
         </div>
       </div>

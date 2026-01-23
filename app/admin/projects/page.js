@@ -340,12 +340,15 @@ export default function ProjectsPage() {
             </Link>
             <h1>Tüm Projeler</h1>
           </div>
-          <input
-            className="admin-search admin-project-search"
-            placeholder="Ara"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
+          <div className="admin-panel-actions">
+            <input
+              className="admin-portal-search"
+              placeholder="Ara"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+            <div className="admin-portal-pill">Portal</div>
+          </div>
         </div>
         <p className="admin-subtitle">Var olan projeleri düzenleyin.</p>
 
@@ -378,12 +381,15 @@ export default function ProjectsPage() {
                     </span>
                   </button>
                   {isOpen && (
-                    <div className="admin-project-wrap">
-                      <div className="admin-member-list admin-project-list">
-                        {yearProjects.map((project) => (
+                    <div className="admin-project-year-content">
+                      <div className="admin-project-wrap">
+                        <div className="admin-member-list admin-project-list">
+                          {yearProjects.map((project) => (
                           <div
                             key={project.id}
-                            className="admin-member-card admin-project-card"
+                            className={`admin-member-card admin-project-card ${
+                              editingId === project.id ? 'admin-project-card-editing' : ''
+                            }`}
                           >
                           <h2 className="admin-project-title">{project.name}</h2>
                           <div className="admin-project-header">
@@ -722,7 +728,8 @@ export default function ProjectsPage() {
                             </div>
                           )}
                           </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}

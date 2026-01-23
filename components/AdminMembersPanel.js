@@ -177,6 +177,7 @@ export default function AdminMembersPanel({ mode }) {
   })
 
   const pendingCount = members.filter((member) => member.status === 'pending').length
+  const activeCount = members.filter((member) => member.memberEnd === 'active').length
 
   return (
     <div className="page">
@@ -190,28 +191,37 @@ export default function AdminMembersPanel({ mode }) {
               Yönetim Paneli
             </Link>
             <h1>{mode === 'approvals' ? 'Bekleyen Onaylar' : 'Tüm Üyeler'}</h1>
+            <p className="admin-subtitle">
+              {mode === 'approvals'
+                ? 'Onay bekleyen üyeler'
+                : 'Üye listesi ve hızlı düzenlemeler'}
+            </p>
           </div>
-          <span className="admin-panel-count">
-            {mode === 'approvals' ? pendingCount : members.length}
-          </span>
-        </div>
-        <p className="admin-subtitle">
-          {mode === 'approvals'
-            ? 'Onay bekleyen üyeler'
-            : 'Üye listesi ve hızlı düzenlemeler'}
-        </p>
-        <div className="admin-filters">
-          {mode === 'members' && (
-            <></>
-          )}
-          <div className="admin-filter-row">
+          <div className="admin-panel-actions">
             <input
-              className="admin-search"
+              className="admin-portal-search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="İsim veya e-posta ara"
+              placeholder="Ara"
             />
-            {mode === 'members' && (
+            <div className="admin-portal-pill">Portal</div>
+          </div>
+        </div>
+          <div className="admin-panel-counts admin-panel-counts-row">
+          <div className="admin-panel-count">
+            {mode === 'approvals'
+              ? `Onay Bekleyen: ${pendingCount}`
+              : `Toplam Üye Sayısı: ${members.length}`}
+          </div>
+          {mode === 'members' && (
+            <div className="admin-panel-count admin-panel-count-muted">
+              Toplam Aktif Üye: {activeCount}
+            </div>
+          )}
+        </div>
+        {mode === 'members' && (
+          <div className="admin-filters">
+            <div className="admin-filter-row">
               <button
                 type="button"
                 className={`admin-filter admin-filter-highlight admin-filter-pill ${
@@ -221,31 +231,27 @@ export default function AdminMembersPanel({ mode }) {
               >
                 Aktif Üyeler
               </button>
-            )}
-            {mode === 'members' && (
-              <>
-                {[
-                  { id: 'member', label: 'Üye' },
-                  { id: 'management', label: 'Yönetim' },
-                  { id: 'lead', label: 'Ekip Lideri' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`admin-filter admin-filter-pill ${
-                      roleFilter === item.id ? 'active' : ''
-                    }`}
-                    onClick={() =>
-                      setRoleFilter((prev) => (prev === item.id ? 'all' : item.id))
-                    }
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </>
-            )}
+              {[
+                { id: 'member', label: 'Üye' },
+                { id: 'management', label: 'Yönetim' },
+                { id: 'lead', label: 'Ekip Lideri' },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`admin-filter admin-filter-pill ${
+                    roleFilter === item.id ? 'active' : ''
+                  }`}
+                  onClick={() =>
+                    setRoleFilter((prev) => (prev === item.id ? 'all' : item.id))
+                  }
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         {isLoading ? (
           <div className="admin-loading admin-loading-overlay">
             <LottieLoader src={LOADER_SRC} label="Üyeler yükleniyor..." size={140} />

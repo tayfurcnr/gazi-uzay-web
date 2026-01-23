@@ -213,6 +213,7 @@ const roleRank = {
   member: 1,
   lead: 2,
   management: 3,
+  founder: 4,
 }
 
 const publicTags = ['Etkinlik', 'Yarışma', 'Genel']
@@ -242,9 +243,12 @@ export default function Announcements() {
 
   const today = new Date()
   const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-  const canEditPage = isLoggedIn && userRole === 'management'
-  const canPublish = isLoggedIn && (userRole === 'lead' || userRole === 'management')
-  const canManageAnnouncements = isLoggedIn && (userRole === 'lead' || userRole === 'management')
+  const canEditPage =
+    isLoggedIn && (userRole === 'management' || userRole === 'founder')
+  const canPublish =
+    isLoggedIn && (userRole === 'lead' || userRole === 'management' || userRole === 'founder')
+  const canManageAnnouncements =
+    isLoggedIn && (userRole === 'lead' || userRole === 'management' || userRole === 'founder')
   const getRoleRank = (role) => roleRank[role] || 0
   const canViewItem = (item) => {
     if (!isLoggedIn) {
@@ -556,7 +560,7 @@ export default function Announcements() {
               onChange={(event) => updateBanner('title', event.target.value)}
             />
           ) : (
-            <p className="page-subtitle page-subtitle-strong">{data.banner.title}</p>
+            <h1 className="page-title">{data.banner.title}</h1>
           )}
           {isEditing ? (
             <textarea
@@ -565,7 +569,7 @@ export default function Announcements() {
               onChange={(event) => updateBanner('text', event.target.value)}
             />
           ) : (
-            <p className="announcements-banner-text">{data.banner.text}</p>
+            <p className="announcements-banner-text page-subtitle">{data.banner.text}</p>
           )}
         </div>
       </div>
@@ -780,7 +784,8 @@ export default function Announcements() {
               <span className={`announcement-tag ${editItem.tagClass}`}>{editItem.tag}</span>
             </div>
             </div>
-            <div className="announcement-edit-fields">
+            <div className="announcement-edit-wrapper">
+              <div className="announcement-edit-fields">
               <div className="contact-edit-block">
                 <label className="contact-edit-label">Başlık</label>
                 <input
@@ -1033,6 +1038,7 @@ export default function Announcements() {
                     setEditItem((prev) => ({ ...prev, description: event.target.value }))
                   }}
                 />
+              </div>
               </div>
             </div>
             <div className="announcement-modal-footer">

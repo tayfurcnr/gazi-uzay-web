@@ -1,3 +1,10 @@
 export default function About() {
-  return null
+  return (
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Hakkımızda</h1>
+        <p className="page-subtitle">Topluluğumuzu daha yakından tanıyın</p>
+      </div>
+    </div>
+  )
 }

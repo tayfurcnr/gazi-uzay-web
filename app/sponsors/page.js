@@ -389,7 +389,7 @@ export default function Sponsors() {
               onChange={(event) => updateSponsorIntro('title', event.target.value)}
             />
           ) : (
-            <p className="page-subtitle page-subtitle-strong">{data.sponsorIntro.title}</p>
+            <h1 className="page-title">{data.sponsorIntro.title}</h1>
           )}
           {isEditing ? (
             <textarea
@@ -398,7 +398,7 @@ export default function Sponsors() {
               onChange={(event) => updateSponsorIntro('text', event.target.value)}
             />
           ) : (
-            <p className="sponsors-banner-text">{data.sponsorIntro.text}</p>
+            <p className="sponsors-banner-text page-subtitle">{data.sponsorIntro.text}</p>
           )}
         </div>
       </div>
@@ -479,7 +479,7 @@ export default function Sponsors() {
               onChange={(event) => updateBanner('title', event.target.value)}
             />
           ) : (
-            <p className="page-subtitle page-subtitle-strong">{data.banner.title}</p>
+            <h1 className="page-title">{data.banner.title}</h1>
           )}
           {isEditing ? (
             <textarea
@@ -488,7 +488,7 @@ export default function Sponsors() {
               onChange={(event) => updateBanner('text', event.target.value)}
             />
           ) : (
-            <p className="sponsors-banner-text">{data.banner.text}</p>
+            <p className="sponsors-banner-text page-subtitle">{data.banner.text}</p>
           )}
         </div>
       </div>
