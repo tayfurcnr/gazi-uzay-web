@@ -1,6 +1,5 @@
 import { prisma } from '../../lib/prisma'
 import ProjectsClient from '../../components/ProjectsClient'
-import ProjectsPageLoader from '../../components/ProjectsPageLoader'
 
 export const revalidate = 0
 
@@ -42,7 +41,6 @@ export default async function Projects() {
   }))
   return (
     <div>
-      <ProjectsPageLoader />
       <div className="page-header">
         <h1 className="page-title">Projeler</h1>
         <p className="page-subtitle">
