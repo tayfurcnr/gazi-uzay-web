@@ -12,6 +12,7 @@ const roleLabels = {
   management: 'Yönetim Ekibi',
   lead: 'Ekip Lideri',
   member: 'Üye',
+  academy: 'Akademi',
 }
 
 const TITLE_MIN = 2

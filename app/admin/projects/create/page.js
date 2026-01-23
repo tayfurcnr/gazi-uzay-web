@@ -334,6 +334,8 @@ export default function ProjectCreate() {
                           ? 'Ekip Lideri'
                           : form.leadRole === 'member'
                           ? 'Üye'
+                          : form.leadRole === 'academy'
+                          ? 'Akademi'
                           : 'Misafir'}
                       </span>
                     </div>
@@ -440,6 +442,8 @@ export default function ProjectCreate() {
                                   ? 'Ekip Lideri'
                                   : role === 'member'
                                   ? 'Üye'
+                                  : role === 'academy'
+                                  ? 'Akademi'
                                   : 'Misafir'}
                               </span>
                               {email && <span>{email}</span>}

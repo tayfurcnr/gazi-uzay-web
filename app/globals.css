@@ -902,6 +902,11 @@ body {
   color: #e2e8f0;
 }
 
+.admin-team-role-academy {
+  border-color: rgba(148, 163, 184, 0.5);
+  color: #e2e8f0;
+}
+
 .admin-team-result:hover {
   background: rgba(255, 255, 255, 0.08);
 }
@@ -2499,6 +2504,12 @@ body {
 }
 
 .admin-role-member {
+  border-color: rgba(94, 234, 212, 0.55);
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.2), rgba(45, 212, 191, 0.12));
+  color: #ccfbf1;
+}
+
+.admin-role-academy {
   border-color: rgba(94, 234, 212, 0.55);
   background: linear-gradient(135deg, rgba(94, 234, 212, 0.2), rgba(45, 212, 191, 0.12));
   color: #ccfbf1;

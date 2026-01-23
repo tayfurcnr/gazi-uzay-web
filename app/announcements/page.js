@@ -211,6 +211,7 @@ const normalizeRole = (value) => {
 
 const roleRank = {
   member: 1,
+  academy: 1,
   lead: 2,
   management: 3,
   founder: 4,
@@ -945,6 +946,7 @@ export default function Announcements() {
                     }}
                   >
                     <option value="member">Üye</option>
+                    <option value="academy">Akademi</option>
                     <option value="lead">Ekip Lideri</option>
                     <option value="management">Yönetim</option>
                   </select>

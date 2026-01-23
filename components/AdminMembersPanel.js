@@ -11,6 +11,7 @@ const LOADER_SRC = '/lottie/space%20boy%20developer.json'
     { value: 'founder', label: 'Kurucu', disabled: true },
     { value: 'guest', label: 'Misafir' },
     { value: 'member', label: 'Üye' },
+    { value: 'academy', label: 'Akademi' },
     { value: 'lead', label: 'Ekip Lideri' },
     { value: 'management', label: 'Yönetim' },
   ]
@@ -19,6 +20,7 @@ const LOADER_SRC = '/lottie/space%20boy%20developer.json'
     founder: 'Kurucu',
     guest: 'Misafir',
     member: 'Üye',
+    academy: 'Akademi',
     lead: 'Ekip Lideri',
     management: 'Yönetim',
   }
@@ -233,6 +235,7 @@ export default function AdminMembersPanel({ mode }) {
               </button>
               {[
                 { id: 'member', label: 'Üye' },
+                { id: 'academy', label: 'Akademi' },
                 { id: 'management', label: 'Yönetim' },
                 { id: 'lead', label: 'Ekip Lideri' },
               ].map((item) => (

@@ -13,6 +13,7 @@ enum Role {
   MANAGEMENT
   LEAD
   MEMBER
+  ACADEMY
 }
 
 enum MemberStatus {

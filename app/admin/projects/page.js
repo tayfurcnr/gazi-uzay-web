@@ -28,6 +28,7 @@ export default function ProjectsPage() {
     if (value === 'management') return 'Yönetim'
     if (value === 'lead') return 'Ekip Lideri'
     if (value === 'member') return 'Üye'
+    if (value === 'academy') return 'Akademi'
     if (value === 'guest') return 'Misafir'
     return value || 'Üye'
   }
