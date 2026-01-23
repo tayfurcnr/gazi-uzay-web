@@ -28,6 +28,7 @@ export default function Navbar({ onLoginClick }) {
             <Link 
               key={item.href}
               href={item.href} 
+              target="_self"
               className={`nav-link ${pathname === item.href ? 'active' : ''}`}
             >
               {item.label}

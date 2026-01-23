@@ -91,6 +91,7 @@ export default function Sidebar({ onLoginClick = () => {} }) {
               <Link
                 key={item.href}
                 href={item.href}
+                target="_self"
                 className={`nav-link ${pathname === item.href ? 'active' : ''}`}
               >
                 <span className="nav-label">{item.label}</span>
@@ -101,6 +102,7 @@ export default function Sidebar({ onLoginClick = () => {} }) {
               <Link
                 key={item.href}
                 href={item.href}
+                target="_self"
                 className={`nav-link nav-link-admin ${pathname === item.href ? 'active' : ''}`}
               >
                 <span className="nav-label">{item.label}</span>
@@ -111,7 +113,12 @@ export default function Sidebar({ onLoginClick = () => {} }) {
 
         <div className="sidebar-footer">
           {isLoggedIn && (
-            <Link href="/profile" className="sidebar-profile" onClick={() => setIsOpen(false)}>
+            <Link
+              href="/profile"
+              target="_self"
+              className="sidebar-profile"
+              onClick={() => setIsOpen(false)}
+            >
               <div className="sidebar-profile-avatar">
                 <img src={profileAvatar || '/avatar-placeholder.svg'} alt="Profil" />
               </div>

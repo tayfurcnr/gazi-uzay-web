@@ -339,6 +339,7 @@ export default function ProjectsPage() {
               Yönetim Paneli
             </Link>
             <h1>Tüm Projeler</h1>
+            <p className="admin-subtitle">Var olan projeleri düzenleyin.</p>
           </div>
           <div className="admin-panel-actions">
             <input
@@ -350,7 +351,6 @@ export default function ProjectsPage() {
             <div className="admin-portal-pill">Portal</div>
           </div>
         </div>
-        <p className="admin-subtitle">Var olan projeleri düzenleyin.</p>
 
         {isLoading ? (
           <div className="admin-loading admin-loading-overlay">

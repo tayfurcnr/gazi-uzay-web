@@ -219,9 +219,9 @@ export default function ProjectCreate() {
               Yönetim Paneli
             </Link>
             <h1>Proje Oluştur</h1>
+            <p className="admin-subtitle">Yeni proje bilgilerini girin.</p>
           </div>
         </div>
-        <p className="admin-subtitle">Yeni proje bilgilerini girin.</p>
 
         <div className="admin-team-form">
           <div className="admin-team-card">
