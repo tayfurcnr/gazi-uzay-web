@@ -21,6 +21,7 @@ export default function ProjectsPage() {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
+  const [userRole, setUserRole] = useState('')
 
   const roleLabel = (role) => {
     const value = (role || '').toLowerCase()
@@ -32,6 +33,18 @@ export default function ProjectsPage() {
     if (value === 'guest') return 'Misafir'
     return value || 'Üye'
   }
+
+  useEffect(() => {
+    const role = localStorage.getItem('demoRole') || ''
+    setUserRole(role)
+  }, [])
+
+  useEffect(() => {
+    if (!userRole) return
+    if (!['management', 'founder', 'lead'].includes(userRole)) {
+      window.location.href = '/admin'
+    }
+  }, [userRole])
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -115,14 +128,6 @@ export default function ProjectsPage() {
     }, {})
   }, [members])
 
-  const activeMembers = useMemo(() => {
-    return members.filter(
-      (member) =>
-        (member.memberEnd === 'active' || member.memberEnd === '') &&
-        member.status === 'approved'
-    )
-  }, [members])
-
   const selectedMemberIds = Array.isArray(draft.memberIds) ? draft.memberIds : []
   const selectedMembers = useMemo(() => {
     const membersList = selectedMemberIds.map((id) => memberMap[id]).filter(Boolean)
@@ -140,8 +145,8 @@ export default function ProjectsPage() {
 
   const filteredMembers = useMemo(() => {
     const query = memberQuery.trim().toLowerCase()
-    const available = activeMembers.filter(
-      (member) => !selectedMemberIds.includes(member.id)
+    const available = members.filter(
+      (member) => member.status === 'approved' && !selectedMemberIds.includes(member.id)
     )
     if (!query) return available
     return available.filter((member) => {
@@ -149,7 +154,7 @@ export default function ProjectsPage() {
       const haystack = `${name} ${member.email || ''}`.toLowerCase()
       return haystack.includes(query)
     })
-  }, [activeMembers, memberQuery, selectedMemberIds])
+  }, [members, memberQuery, selectedMemberIds])
 
   const addMember = (memberId) => {
     if (!memberId) return

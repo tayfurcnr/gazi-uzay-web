@@ -91,6 +91,19 @@ export default function Admin() {
       ),
     },
     {
+      key: 'my-projects',
+      label: 'Projelerim',
+      eyebrow: 'Proje İşlemleri',
+      description: 'Dahil olduğunuz projeleri tek listede görüntüleyin.',
+      href: '/admin/projects/my',
+      icon: (
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3z" />
+          <path d="M4 9v6c0 1.7 3.6 3 8 3s8-1.3 8-3V9" />
+        </svg>
+      ),
+    },
+    {
       key: 'project-management',
       label: 'Tüm Projeler',
       eyebrow: 'Proje Yönetimi',
@@ -244,6 +257,7 @@ export default function Admin() {
               {filteredProjectItems.map((item) => {
                 const isLocked =
                   item.key === 'project-create' && userRole === 'lead'
+                const isMyProjectsLocked = item.key === 'my-projects' && userRole === 'guest'
                 const isProjectManagementLocked =
                   item.key === 'project-management' &&
                   !['management', 'founder', 'lead'].includes(userRole)
@@ -262,6 +276,25 @@ export default function Admin() {
                       </div>
                       <h2>{item.label}</h2>
                       <p>Proje oluşturma için ek yetki gerekiyor.</p>
+                      <div className="admin-portal-cta">Kilitli</div>
+                    </div>
+                  )
+                }
+                if (isMyProjectsLocked) {
+                  return (
+                    <div
+                      key={item.key}
+                      className="admin-portal-card admin-portal-card-soft"
+                      aria-disabled="true"
+                    >
+                      <div className="admin-portal-card-top">
+                        <div className="admin-portal-icon" aria-hidden="true">
+                          {item.icon}
+                        </div>
+                        <span className="admin-portal-eyebrow">{item.eyebrow}</span>
+                      </div>
+                      <h2>{item.label}</h2>
+                      <p>Projelerim alanı için giriş yapmanız gerekiyor.</p>
                       <div className="admin-portal-cta">Kilitli</div>
                     </div>
                   )
